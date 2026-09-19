@@ -941,7 +941,6 @@
     currentRoute = r.raw;
     runTeardown();
     markActiveNav(r.path);
-    document.title = I18N.t('site.title');
     closeNav();
 
     var parts = r.path.split('/').filter(Boolean);

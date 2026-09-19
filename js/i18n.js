@@ -10,15 +10,16 @@
   var DEFAULT_LANG = 'zh';
 
   var META = {
-    zh: { label: '中文', htmlLang: 'zh-Hant', intl: 'zh-Hant-TW' },
-    en: { label: 'EN', htmlLang: 'en', intl: 'en' },
-    ja: { label: '日本語', htmlLang: 'ja', intl: 'ja' }
+    zh: { label: '中文', htmlLang: 'zh-Hant', intl: 'zh-Hant-TW', ogLocale: 'zh_Hant' },
+    en: { label: 'EN', htmlLang: 'en', intl: 'en', ogLocale: 'en_US' },
+    ja: { label: '日本語', htmlLang: 'ja', intl: 'ja', ogLocale: 'ja_JP' }
   };
 
   var DICT = {
     zh: {
       'site.name': '聽見音樂',
       'site.title': '聽見音樂 A-Music｜獨立音樂人作品推廣',
+      'site.desc': '彙整並推廣華語獨立音樂人的 YouTube 作品，依曲風探索，隨時發現新聲音。',
       'site.tagline': '聽見每一首值得被聽見的作品',
       'a11y.skip': '跳至主要內容',
 
@@ -105,6 +106,7 @@
     en: {
       'site.name': 'A-Music',
       'site.title': 'A-Music｜Independent Artist Showcase',
+      'site.desc': 'A curated showcase of independent artists on YouTube. Browse by genre and discover new sounds.',
       'site.tagline': 'Hear every track worth hearing',
       'a11y.skip': 'Skip to main content',
 
@@ -191,6 +193,7 @@
     ja: {
       'site.name': 'A-Music',
       'site.title': 'A-Music｜インディーアーティスト作品ガイド',
+      'site.desc': '華語圏のインディーアーティストによる YouTube 作品を集めて紹介。ジャンルから新しい音に出会えます。',
       'site.tagline': '聴かれるべき一曲を、あなたに',
       'a11y.skip': 'メインコンテンツへスキップ',
 
@@ -343,7 +346,27 @@
       each(scope.querySelectorAll('[data-i18n-aria]'), function (el) {
         el.setAttribute('aria-label', I18N.t(el.getAttribute('data-i18n-aria')));
       });
-      if (scope === document) document.title = I18N.t('site.title');
+      if (scope === document) I18N.syncSEO();
+    },
+
+    /* Sync SEO / Open Graph / Twitter meta tags for current language. */
+    syncSEO: function () {
+      var title = I18N.t('site.title');
+      var desc  = I18N.t('site.desc');
+      document.title = title;
+      document.documentElement.lang = META[current].htmlLang;
+      var m = document.querySelector('meta[name="description"]');
+      if (m) m.setAttribute('content', desc);
+      m = document.querySelector('meta[property="og:title"]');
+      if (m) m.setAttribute('content', title);
+      m = document.querySelector('meta[property="og:description"]');
+      if (m) m.setAttribute('content', desc);
+      m = document.querySelector('meta[property="og:locale"]');
+      if (m) m.setAttribute('content', META[current].ogLocale);
+      m = document.querySelector('meta[name="twitter:title"]');
+      if (m) m.setAttribute('content', title);
+      m = document.querySelector('meta[name="twitter:description"]');
+      if (m) m.setAttribute('content', desc);
     },
 
     /* ---- locale-aware formatters ---- */

@@ -15,7 +15,7 @@ python3 -m http.server 4173
 
 | 路徑 | 內容 |
 | --- | --- |
-| `index.html` | 外殼：header、語言切換、搜尋列、footer |
+| `index.html` | 外殼：header、語言切換、搜尋列、footer；canonical／Open Graph／Twitter Card |
 | `css/style.css` | Mobile-first RWD；斷點 560 / 900 / 1240 px；亮色／暗色兩套變數 |
 | `js/theme.js` | 佈景主題：亮色／暗色切換與記憶（在 `<head>` 先行載入，避免閃爍） |
 | `js/i18n.js` | i18n 核心：zh / en / ja 字典、`data-i18n*` 宣告式套用、`Intl` 日期與數字格式 |
@@ -23,6 +23,8 @@ python3 -m http.server 4173
 | `js/api.js` | 資料層：TrackRadar JSON + YouTube oEmbed，含 localStorage 快取與併發控制 |
 | `js/search.js` | 萬用字元比對與全曲庫漸進式掃描 |
 | `js/app.js` | Hash 路由與各頁面 view、瀑布流、延遲載入 |
+| `assets/og-image.png` | 社群分享圖（1200×630） |
+| `robots.txt` | 允許所有搜尋引擎收錄 |
 
 ## 資料來源
 

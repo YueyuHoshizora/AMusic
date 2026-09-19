@@ -25,6 +25,7 @@
 | `404.html` | 無 shell 路徑的 fallback（產生器輸出，`noindex`、無 canonical） | 不要手改；不要改成轉址到 `/`（會變 soft 404） |
 | `sitemap.xml` / `sitemap-videos.xml` / `robots.txt` | 可爬 URL 清單與 hreflang 對應；影片 sitemap 把每首作品掛在其音樂人頁 | 兩份 sitemap 都不要手改；影片的 `<loc>` 必須是真的能播該片的頁面 |
 | `tools/build-pages.py` | 從 `index.html` 產生各路由 shell、`404.html`、`sitemap.xml`、`sitemap-videos.xml`、`.pages-stamp` | 不要讓它變成瀏覽器端的相依 |
+| `tools/version-assets.py` | 依內容 sha256 改寫 `index.html` 裡本地 `js`／`css` 的 `?v=` 查詢字串，供 CDN／瀏覽器快取失效 | 必須在 `build-pages.py` 之前跑，讓各路由 shell 繼承新版號；不要手改個別 shell 的 `?v=` |
 | `.github/workflows/build-pages.yml` | 每 5 分鐘重跑產生器，有 diff 才 commit | 不要拿掉 `--if-changed`（排程會變成每 5 分鐘抓 21 份上游 JSON） |
 | `css/style.css` | 全站樣式、兩套主題變數、RWD（斷點 560 / 900 / 1240 px） | 不寫死顏色、不加第三方字體 |
 | `js/theme.js` | 亮／暗主題；在 `<head>` 內同步執行 | 不要移到 `</body>` 前（會主題閃爍） |
@@ -89,7 +90,7 @@ python3 -m http.server 4173    # 必須用 HTTP；file:// 會被擋 fetch
 - 至少量一次手機寬度（390px）與桌機（1280px），確認無水平溢位
 - 瀑布流：閒置時卡片數不變，捲到底部才追加
 
-**瀏覽器會吃 JS／CSS 快取**：驗證前關掉快取或加 query string，否則會看到舊行為（已經發生過一次誤判）。
+**瀏覽器會吃 JS／CSS 快取**：驗證前關掉快取或加 query string，否則會看到舊行為（已經發生過一次誤判）。改了 `css/*.css` 或 `js/*.js` 後，`push` 到 `main` 會觸發 `build-pages.yml` 自動跑 `tools/version-assets.py` 重算 `?v=<sha256前8碼>` 並 commit（同一模式跟著套用到每條路由 shell），不必手動改查詢字串；本機驗證想馬上看到新版本，先跑一次 `python3 tools/version-assets.py` 再開伺服器。
 
 ## 送出與部署
 

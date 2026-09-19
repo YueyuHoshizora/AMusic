@@ -14,11 +14,12 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:                     # the shell template and its data sources
+    paths:                     # the shell template, its data sources, and every versioned asset
       - 'index.html'
-      - 'js/genres.js'
-      - 'js/i18n.js'
+      - 'js/**'
+      - 'css/**'
       - 'tools/build-pages.py'
+      - 'tools/version-assets.py'
 
 concurrency:
   group: build-pages
@@ -36,6 +37,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      # Cache-bust any changed css/js before the template is copied into every
+      # route shell, so a returning visitor's browser fetches the new bytes.
+      - name: Refresh asset version query strings
+        run: python3 tools/version-assets.py
 
       # Scheduled runs skip the full rebuild when upstream has not moved;
       # a manual run or a template change always regenerates.

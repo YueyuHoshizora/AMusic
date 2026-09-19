@@ -24,6 +24,7 @@ python3 -m http.server 4173
 | `js/search.js` | 萬用字元比對與全曲庫漸進式掃描 |
 | `js/app.js` | Path 路由（pushState / popstate / 連結攔截）與各頁面 view、瀑布流、延遲載入 |
 | `tools/build-pages.py` | 產生各路由 `index.html`、`404.html`、`sitemap.xml`、`sitemap-videos.xml`（唯一模板是 `index.html`） |
+| `tools/version-assets.py` | 依內容 sha256 幫 `index.html` 裡的本地 `js`／`css` 加上 `?v=` 查詢字串，避免瀏覽器／CDN 快取到舊版本；在 `build-pages.py` 之前跑，讓每條路由 shell 都繼承新版號 |
 | `.github/workflows/build-pages.yml` | 每 5 分鐘重跑產生器，上游有變動才 commit |
 | `assets/og-image.png` | 社群分享圖（1200×630） |
 | `robots.txt` | 允許所有搜尋引擎收錄，並指向兩份 sitemap |
@@ -113,7 +114,8 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 ## 路由 shell 的維護
 
 ```bash
-python3 tools/build-pages.py                # 完整重建
+python3 tools/version-assets.py             # 改了 css/js 才需要：刷新 index.html 的 ?v= 版號
+python3 tools/build-pages.py                # 完整重建（會讀最新的 index.html，含上一步的版號）
 python3 tools/build-pages.py --if-changed   # 上游沒變就直接結束（排程用）
 ```
 

@@ -98,7 +98,6 @@
       'footer.source': '資料來源',
       'footer.updated': '資料更新於 {date}',
       'footer.code': '原始碼',
-      'footer.license': '授權：AGPL-3.0-or-later',
       'footer.privacy': '隱私權說明',
       'footer.sitemap': '網站地圖',
 
@@ -193,7 +192,6 @@
       'footer.source': 'Data source',
       'footer.updated': 'Data updated {date}',
       'footer.code': 'Source code',
-      'footer.license': 'License: AGPL-3.0-or-later',
       'footer.privacy': 'Privacy policy',
       'footer.sitemap': 'Sitemap',
 
@@ -288,7 +286,6 @@
       'footer.source': 'データ提供',
       'footer.updated': 'データ更新日 {date}',
       'footer.code': 'ソースコード',
-      'footer.license': 'ライセンス：AGPL-3.0-or-later',
       'footer.privacy': 'プライバシー',
       'footer.sitemap': 'サイトマップ',
 

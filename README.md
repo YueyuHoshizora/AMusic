@@ -9,7 +9,7 @@ python3 -m http.server 4173
 # http://127.0.0.1:4173/
 ```
 
-必須透過 HTTP 伺服器開啟（`file://` 會被瀏覽器阻擋 fetch）。部署時直接上傳整個目錄即可，路由採 hash（`#/artist/<id>`），不需要伺服器改寫規則，可直接放 GitHub Pages / Cloudflare Pages。
+必須透過 HTTP 伺服器開啟（`file://` 會被瀏覽器阻擋 fetch）。路由是真實路徑（`/artist/<id>/`），每條路由都有自己的 `index.html`，因此不需要伺服器改寫規則；部署時直接上傳整個目錄即可。缺 shell 的路徑會落到 `404.html`，畫面仍正常。
 
 ## 目錄
 
@@ -22,11 +22,15 @@ python3 -m http.server 4173
 | `js/genres.js` | 曲風標籤三語對照（鍵值＝TrackRadar `genres.json` 的原始字串） |
 | `js/api.js` | 資料層：TrackRadar JSON + YouTube oEmbed，含 localStorage 快取與併發控制 |
 | `js/search.js` | 萬用字元比對與全曲庫漸進式掃描 |
-| `js/app.js` | Hash 路由與各頁面 view、瀑布流、延遲載入 |
+| `js/app.js` | Path 路由（pushState / popstate / 連結攔截）與各頁面 view、瀑布流、延遲載入 |
+| `tools/build-pages.py` | 產生各路由 `index.html`、`404.html`、`sitemap.xml`（唯一模板是 `index.html`） |
+| `.github/workflows/build-pages.yml` | 每 5 分鐘重跑產生器，上游有變動才 commit |
 | `assets/og-image.png` | 社群分享圖（1200×630） |
 | `robots.txt` | 允許所有搜尋引擎收錄，並指向 `sitemap.xml` |
-| `sitemap.xml` | 可爬 URL（首頁與 `?lang=` 語系變體）與 hreflang 對應 |
-| `404.html` | GitHub Pages 的真 404 頁（三語、`noindex`，不轉址） |
+| `sitemap.xml` | 全部可爬路由與 hreflang 對應（產生器輸出，勿手改） |
+| `404.html` | 無 shell 路徑的 fallback（產生器輸出，`noindex`） |
+| `latest/`、`artists/`、`genres/`、`genre/<slug>/`、`artist/<id>/`、`search/` | 產生器輸出的路由 shell（勿手改） |
+| `.pages-stamp` | 上游指紋，讓排程能快速判斷「沒變就不用重建」 |
 | `CNAME` | GitHub Pages 自訂網域 `a-music.app` |
 
 ## 資料來源
@@ -59,14 +63,14 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 
 ## 音樂人排序
 
-音樂人清單（首頁、`#/artists`、搜尋結果的藝人區）每次繪製都以 Fisher-Yates 洗牌（`shuffled()`），不會有固定的人長期佔據第一個位置。洗牌只作用在複本上，快取的 `channels.json` 陣列不受影響。
+音樂人清單（首頁、`/artists/`、搜尋結果的藝人區）每次繪製都以 Fisher-Yates 洗牌（`shuffled()`），不會有固定的人長期佔據第一個位置。洗牌只作用在複本上，快取的 `channels.json` 陣列不受影響。
 
 ## 頁面
 
-- `#/`：Hero 統計、曲風快速篩選、最新音樂（最多三列）、音樂人列表
-- `#/latest`、`#/artists`、`#/genres`、`#/genre/<slug>`
-- `#/artist/<channelId>`：簡介（依作品數、主要曲風、最新作品自動生成三語文案）、最新作品、全部作品
-- `#/search?q=<query>`：藝人與歌曲搜尋結果
+- `/`：Hero 統計、曲風快速篩選、最新音樂（最多三列）、音樂人列表
+- `/latest/`、`/artists/`、`/genres/`、`/genre/<slug>/`
+- `/artist/<channelId>/`：簡介（依作品數、主要曲風、最新作品自動生成三語文案）、最新作品、全部作品
+- `/search/?q=<query>`：藝人與歌曲搜尋結果
 
 ## 歷史作品：瀑布流 + 延遲載入
 
@@ -94,15 +98,27 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 
 介面字串一律走 `I18N.t()`；靜態標記使用 `data-i18n` / `data-i18n-ph` / `data-i18n-aria` / `data-i18n-html`。切換語言會即時重繪目前頁面並寫入 `localStorage`（key `amusic:lang`），首次造訪則依瀏覽器語言判斷。
 
-語言也可以用網址指定：`https://a-music.app/?lang=en`、`?lang=ja`（`?lang=` 優先於 `localStorage` 與瀏覽器語言）。切換語言時會以 `history.replaceState` 更新這個參數，hash 路由與其他參數都保留，所以 `/?lang=ja#/genres` 可以直接分享。
+語言也可以用網址指定：`https://a-music.app/?lang=en`、`/genre/pop/?lang=ja`（`?lang=` 優先於 `localStorage` 與瀏覽器語言）。切換語言時會以 `history.replaceState` 更新這個參數，路徑與其他參數都保留，所以 `/genres/?lang=ja` 可以直接分享。
 
 ## SEO
 
-- 路由是 hash（`#/...`），搜尋引擎會丟掉片段，因此**可爬的 URL 只有首頁與三個語系變體**。`sitemap.xml` 只列這些，不假裝 `#/` 路由是獨立網址。
+- 路由是真實路徑，且**每條路由都有實體 `index.html`**（`tools/build-pages.py` 產生）。GitHub Pages 沒有 rewrite，沒有實體檔案的路徑只會回 404，因此這些 shell 是「路由能被索引」的前提。
+- 每個 shell 的 `<head>` 就帶好該頁的 `<title>`、`description`、canonical、hreflang 與 `og:*`，爬蟲不必執行 JavaScript 就能拿到正確 meta；`js/app.js` 進站後再用 `I18N.setPageMeta()` 維持 SPA 導覽時的同步。
 - canonical 跟著網址而不是顯示語言：`/` 永遠 canonical 到 `/`，只有明確帶 `?lang=en` / `?lang=ja` 才 canonical 到對應變體，避免 apex 的權重被語系變體吃掉。
-- 每個頁面都有自己的 `<title>`、`description`、`og:*` 與 `twitter:*`（`I18N.setPageMeta()`，切頁時還原站台預設），並維持單一 `h1`。
-- 搜尋結果頁與找不到頁面加上 `robots: noindex, follow`。
+- 站內連結不帶 `lang`（爬蟲看到乾淨 URL），使用者的明確選擇則由 `navigate()` 在站內導覽時帶著走。
+- 搜尋結果頁與找不到頁面加上 `robots: noindex, follow`；每頁維持單一 `h1`。
 - `index.html` 內嵌 JSON-LD（`Organization` + `WebSite`）描述站台本身。
+
+## 路由 shell 的維護
+
+```bash
+python3 tools/build-pages.py                # 完整重建
+python3 tools/build-pages.py --if-changed   # 上游沒變就直接結束（排程用）
+```
+
+頁面內容永遠是瀏覽器端即時抓上游，不受 shell 影響；shell 只影響 `<head>` 的 meta 與「哪些路徑有實體檔案」。`.github/workflows/build-pages.yml` 每 5 分鐘跑一次 `--if-changed`，上游 `updatedAt` 或音樂人名冊有變才完整重建並 commit。因此上游新增音樂人後，該藝人頁會有最多一個排程週期是靠 `404.html` 渲染（畫面正常，狀態碼 404、暫不進索引），重建後就變成 200。
+
+GitHub 的排程是 best-effort（常延遲數分鐘），且 repo 連續 60 天沒有任何活動時會自動停用排程 workflow；必要時在 Actions 頁面手動觸發一次即可恢復。
 
 ## 授權
 

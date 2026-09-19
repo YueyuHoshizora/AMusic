@@ -291,11 +291,11 @@
   var current = DEFAULT_LANG;
   var pageMeta = null;        // per-route override; the router clears it
 
-  var SITE_URL = 'https://a-music.app/';
+  var SITE_ORIGIN = 'https://a-music.app';
 
-  /* Language lives in the query string, never in the hash: `/?lang=en#/genres`
-   * leaves hash routing untouched while giving crawlers three distinct URLs
-   * that sitemap.xml and the hreflang links can actually point at. */
+  /* Routes are real paths; the language is a query parameter on top of them:
+   * `/genre/pop/?lang=en`. That keeps one crawlable URL per route per locale,
+   * which is what sitemap.xml and the hreflang links point at. */
   function urlLang() {
     var m = /[?&]lang=([a-z-]+)/i.exec(global.location.search);
     if (!m) return null;
@@ -303,12 +303,34 @@
     return DICT[l] ? l : null;
   }
 
+  /* Trailing slash is the canonical form: GitHub Pages redirects `/genres`
+   * to `/genres/`, and canonicals must not point at a redirect. */
+  function routePath() {
+    var p = global.location.pathname.replace(/index\.html$/, '').replace(/\/+$/, '');
+    return p + '/';
+  }
+
+  function urlFor(path, lang) {
+    return SITE_ORIGIN + path + (lang && lang !== DEFAULT_LANG ? '?lang=' + lang : '');
+  }
+
   /* Canonical follows the URL, not the detected language: Googlebot requests
    * `/` with an en Accept-Language, and pointing that at `/?lang=en` would
    * hand the apex's ranking to a variant. Only an explicit ?lang= counts. */
   function canonicalUrl() {
-    var l = urlLang();
-    return l && l !== DEFAULT_LANG ? SITE_URL + '?lang=' + l : SITE_URL;
+    return urlFor(routePath(), urlLang());
+  }
+
+  /* The shells ship hreflang for their own route; in-app navigation has to
+   * repoint them or every route would advertise the landing page's variants. */
+  function syncAlternates() {
+    var path = routePath();
+    var map = { 'zh-hant': 'zh', en: 'en', ja: 'ja', 'x-default': DEFAULT_LANG };
+    var links = document.querySelectorAll('link[rel="alternate"][hreflang]');
+    Array.prototype.forEach.call(links, function (link) {
+      var key = (link.getAttribute('hreflang') || '').toLowerCase();
+      if (map[key]) link.setAttribute('href', urlFor(path, map[key]));
+    });
   }
 
   function syncUrlLang(lang) {
@@ -381,6 +403,9 @@
 
     intlLocale: function () { return META[current].intl; },
 
+    /* app.js carries an explicit ?lang= across in-app navigation. */
+    urlLang: urlLang,
+
     setLang: function (lang) {
       if (!DICT[lang] || lang === current) return;
       current = lang;
@@ -443,6 +468,7 @@
       if (link) link.setAttribute('href', url);
       m = document.querySelector('meta[property="og:url"]');
       if (m) m.setAttribute('content', url);
+      syncAlternates();
     },
 
     /* ---- locale-aware formatters ---- */

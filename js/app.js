@@ -69,7 +69,7 @@
     if (!genreKey) return null;
     return h('a', {
       class: 'badge genre-badge',
-      href: '#/genre/' + Genres.slug(genreKey),
+      href: '/genre/' + Genres.slug(genreKey) + '/',
       title: Genres.description(genreKey)
     }, [h('span', { class: 'badge-icon', 'aria-hidden': 'true', text: Genres.icon(genreKey) }), Genres.label(genreKey)]);
   }
@@ -217,7 +217,7 @@
     ]);
 
     var meta = h('div', { class: 'card-meta' }, [
-      Api.safeChannelId(opts.channelId) ? h('a', { class: 'card-artist', href: '#/artist/' + opts.channelId }, [
+      Api.safeChannelId(opts.channelId) ? h('a', { class: 'card-artist', href: '/artist/' + opts.channelId + '/' }, [
         avatar(opts.channelTitle, opts.channelAvatar, 'avatar-xs'),
         h('span', { text: opts.channelTitle || '' })
       ]) : null,
@@ -256,7 +256,7 @@
   function artistCard(ch, extra) {
     return h('a', {
       class: 'card artist-card',
-      href: Api.safeChannelId(ch.id) ? '#/artist/' + ch.id : '#/artists'
+      href: Api.safeChannelId(ch.id) ? '/artist/' + ch.id + '/' : '/artists/'
     }, [
       avatar(ch.name, ch.avatarUrl),
       h('span', { class: 'artist-info' }, [
@@ -503,8 +503,8 @@
         h('h1', { text: I18N.t('home.hero.title') }),
         h('p', { class: 'lede', text: I18N.t('home.hero.desc') }),
         h('div', { class: 'hero-actions' }, [
-          h('a', { class: 'btn primary', href: '#/artists', text: I18N.t('home.hero.cta') }),
-          h('a', { class: 'btn ghost', href: '#/genres', text: I18N.t('nav.genres') })
+          h('a', { class: 'btn primary', href: '/artists/', text: I18N.t('home.hero.cta') }),
+          h('a', { class: 'btn ghost', href: '/genres/', text: I18N.t('nav.genres') })
         ]),
         h('dl', { class: 'stats', id: 'home-stats' })
       ])
@@ -513,12 +513,12 @@
     var chips = h('div', { class: 'chip-row', id: 'home-chips' });
     var latestSec = h('section', { class: 'block' }, [
       section('home.latest', 'home.latest.desc',
-        h('a', { class: 'section-link', href: '#/latest', text: I18N.t('home.viewAll') })),
+        h('a', { class: 'section-link', href: '/latest/', text: I18N.t('home.viewAll') })),
       h('div', { class: 'grid video-grid', id: 'latest-grid' }, [spinner()])
     ]);
     var artistSec = h('section', { class: 'block' }, [
       section('home.artists', 'home.artists.desc',
-        h('a', { class: 'section-link', href: '#/artists', text: I18N.t('home.viewAll') })),
+        h('a', { class: 'section-link', href: '/artists/', text: I18N.t('home.viewAll') })),
       h('div', { class: 'grid artist-grid', id: 'artist-grid' }, [spinner()])
     ]);
 
@@ -540,9 +540,9 @@
       });
 
       clear(chips);
-      append(chips, [h('a', { class: 'chip active', href: '#/', text: I18N.t('genre.all') })].concat(
+      append(chips, [h('a', { class: 'chip active', href: '/', text: I18N.t('genre.all') })].concat(
         usedGenres.map(function (g) {
-          return h('a', { class: 'chip', href: '#/genre/' + Genres.slug(g) }, [
+          return h('a', { class: 'chip', href: '/genre/' + Genres.slug(g) + '/' }, [
             h('span', { 'aria-hidden': 'true', text: Genres.icon(g) }), ' ' + Genres.label(g)
           ]);
         })
@@ -700,7 +700,7 @@
         });
         keys.forEach(function (key) {
           var n = counts[key] || 0;
-          grid.appendChild(h('a', { class: 'card genre-card' + (n ? '' : ' empty'), href: '#/genre/' + Genres.slug(key) }, [
+          grid.appendChild(h('a', { class: 'card genre-card' + (n ? '' : ' empty'), href: '/genre/' + Genres.slug(key) + '/' }, [
             h('span', { class: 'genre-icon', 'aria-hidden': 'true', text: Genres.icon(key) }),
             h('strong', { text: Genres.label(key) }),
             h('span', { class: 'muted small', text: Genres.description(key) }),
@@ -715,7 +715,7 @@
     var entry = Genres.fromSlug(slug);
     var wrap = h('div', { class: 'view' });
     var head = h('section', { class: 'page-head' }, [
-      h('a', { class: 'back-link', href: '#/genres', text: '← ' + I18N.t('nav.genres') }),
+      h('a', { class: 'back-link', href: '/genres/', text: '← ' + I18N.t('nav.genres') }),
       h('h1', null, [
         h('span', { 'aria-hidden': 'true', text: entry ? entry.icon : '🎵' }),
         ' ' + (entry ? Genres.label(entry.key) : slug)
@@ -787,7 +787,7 @@
 
       append(wrap, [
         h('section', { class: 'artist-hero' }, [
-          h('a', { class: 'back-link', href: '#/artists', text: '← ' + I18N.t('nav.artists') }),
+          h('a', { class: 'back-link', href: '/artists/', text: '← ' + I18N.t('nav.artists') }),
           h('div', { class: 'artist-hero-main' }, [
             avatar(name, known && known.avatarUrl, 'avatar-lg'),
             h('div', {}, [
@@ -851,7 +851,7 @@
       append(wrap, [
         h('section', { class: 'page-head' }, [
           h('h1', { text: I18N.t('artist.notFound') }),
-          h('a', { class: 'btn ghost', href: '#/artists', text: I18N.t('nav.artists') })
+          h('a', { class: 'btn ghost', href: '/artists/', text: I18N.t('nav.artists') })
         ])
       ]);
     });
@@ -1015,7 +1015,7 @@
       h('section', { class: 'page-head' }, [
         h('h1', { text: I18N.t('notfound.title') }),
         h('p', { class: 'lede', text: I18N.t('notfound.desc') }),
-        h('a', { class: 'btn primary', href: '#/', text: I18N.t('common.backHome') })
+        h('a', { class: 'btn primary', href: '/', text: I18N.t('common.backHome') })
       ])
     ]));
     I18N.setPageMeta({ title: I18N.t('notfound.title'), desc: I18N.t('notfound.desc'), noindex: true });
@@ -1037,19 +1037,44 @@
     teardown.splice(0).forEach(function (fn) { try { fn(); } catch (e) { /* noop */ } });
   }
 
-  function parseHash() {
-    var raw = location.hash.replace(/^#/, '') || '/';
-    var qIndex = raw.indexOf('?');
-    var path = qIndex === -1 ? raw : raw.slice(0, qIndex);
+  /* Every route is a real path served by its own index.html on GitHub Pages
+   * (see tools/build-pages.py), so navigation is History API based. Trailing
+   * slashes are canonical; matching ignores them. */
+  function parseRoute() {
+    var path = location.pathname.replace(/\/+$/, '') || '/';
     var query = {};
-    if (qIndex !== -1) {
-      raw.slice(qIndex + 1).split('&').forEach(function (pair) {
-        if (!pair) return;
-        var kv = pair.split('=');
-        query[decodeURIComponent(kv[0])] = decodeURIComponent((kv[1] || '').replace(/\+/g, ' '));
-      });
-    }
-    return { path: path.replace(/\/+$/, '') || '/', query: query, raw: raw };
+    location.search.replace(/^\?/, '').split('&').forEach(function (pair) {
+      if (!pair) return;
+      var kv = pair.split('=');
+      query[decodeURIComponent(kv[0])] = decodeURIComponent((kv[1] || '').replace(/\+/g, ' '));
+    });
+    return { path: path, query: query, raw: path + location.search };
+  }
+
+  /* Only paths this router owns may be hijacked; anything else (PRIVACY-POLICY.md,
+   * sitemap.xml, assets) must stay a normal browser navigation. */
+  function isAppRoute(path) {
+    var parts = path.replace(/\/+$/, '').split('/').filter(Boolean);
+    if (parts.length === 0) return true;
+    if (parts.length === 1) return ['latest', 'artists', 'genres', 'search'].indexOf(parts[0]) !== -1;
+    if (parts.length === 2) return parts[0] === 'genre' || parts[0] === 'artist';
+    return false;
+  }
+
+  /* Internal links ship without ?lang= so crawlers see clean URLs; carry the
+   * visitor's explicit choice across in-app navigation instead. */
+  function navigate(url) {
+    var hashIndex = url.indexOf('#');
+    var hash = hashIndex === -1 ? '' : url.slice(hashIndex);
+    var base = hashIndex === -1 ? url : url.slice(0, hashIndex);
+    var qIndex = base.indexOf('?');
+    var path = qIndex === -1 ? base : base.slice(0, qIndex);
+    var search = qIndex === -1 ? '' : base.slice(qIndex);
+    var lang = I18N.urlLang();
+    if (lang && search.indexOf('lang=') === -1) search += (search ? '&' : '?') + 'lang=' + lang;
+    history.pushState(null, '', path + search + hash);
+    route();
+    global.scrollTo(0, 0);
   }
 
   function markActiveNav(path) {
@@ -1062,7 +1087,7 @@
   }
 
   function route(force) {
-    var r = parseHash();
+    var r = parseRoute();
     if (!force && currentRoute === r.raw) return;
     currentRoute = r.raw;
     I18N.setPageMeta(null);
@@ -1096,7 +1121,7 @@
       e.preventDefault();
       var q = document.getElementById('search-input').value.trim();
       if (!q) return;
-      location.hash = '#/search?q=' + encodeURIComponent(q);
+      navigate('/search/?q=' + encodeURIComponent(q));
     });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-lang]'), function (btn) {
@@ -1114,7 +1139,19 @@
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
 
-    global.addEventListener('hashchange', function () { route(); window.scrollTo(0, 0); });
+    /* Delegated so dynamically rendered cards need no per-link wiring. */
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var a = e.target && e.target.closest ? e.target.closest('a') : null;
+      if (!a || a.target === '_blank' || a.hasAttribute('download')) return;
+      var href = a.getAttribute('href') || '';
+      if (href.charAt(0) !== '/' || href.charAt(1) === '/') return;
+      if (!isAppRoute(href.split('?')[0].split('#')[0])) return;
+      e.preventDefault();
+      navigate(href);
+    });
+
+    global.addEventListener('popstate', function () { route(); global.scrollTo(0, 0); });
 
     I18N.onChange(function () {
       syncLangButtons();

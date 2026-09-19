@@ -189,10 +189,40 @@
     var cur = playing;
     if (!cur) return;
     playing = null;
+    if (cur.onMessage) global.removeEventListener('message', cur.onMessage);
     clear(cur.wrap);
     cur.wrap.classList.remove('playing');
     if (!document.contains(cur.wrap)) return;
     for (var i = 0; i < cur.kids.length; i++) cur.wrap.appendChild(cur.kids[i]);
+  }
+
+  // Mobile WebKit (every browser on iOS, since Apple requires it) drops an
+  // audible autoplay request on an iframe injected from a click handler: by
+  // the time the player has actually loaded, the tap's user-activation token
+  // is gone. Muted autoplay is allowed everywhere, so Api.embedUrl() starts
+  // muted and this unmutes over the YouTube postMessage command protocol the
+  // moment the player reports readiness — no fresh gesture is required for
+  // that because it only changes an already-playing session, it does not
+  // start one. No iframe_api script is loaded; this is the bare postMessage
+  // protocol the embedded player already answers to once enablejsapi=1 is
+  // in the URL.
+  function unmuteWhenReady(frame, videoId) {
+    var done = false;
+    var onMessage = function (e) {
+      if (done || e.source !== frame.contentWindow) return;
+      var data;
+      try { data = JSON.parse(e.data); } catch (err) { return; }
+      if (data.event !== 'onReady' && data.event !== 'infoDelivery') return;
+      done = true;
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*');
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+    };
+    frame.addEventListener('load', function () {
+      // Some embeds only start broadcasting state once they see a listener
+      // announce itself.
+      if (frame.contentWindow) frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: videoId }), '*');
+    });
+    return onMessage;
   }
 
   function playInline(thumbWrap, videoId) {
@@ -207,10 +237,12 @@
       loading: 'lazy',
       frameborder: '0'
     });
+    var onMessage = unmuteWhenReady(frame, videoId);
+    global.addEventListener('message', onMessage);
     stopPlaying();
     var kids = [];
     for (var i = 0; i < thumbWrap.childNodes.length; i++) kids.push(thumbWrap.childNodes[i]);
-    playing = { wrap: thumbWrap, kids: kids };
+    playing = { wrap: thumbWrap, kids: kids, onMessage: onMessage };
     clear(thumbWrap);
     thumbWrap.classList.add('playing');
     thumbWrap.appendChild(frame);

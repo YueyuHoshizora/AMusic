@@ -238,11 +238,18 @@
 
     embedUrl: function (id) {
       var safe = safeVideoId(id);
-      // playsinline=1 keeps iOS Safari from treating the embed as a
-      // fullscreen-only player; without it, autoplay=1 silently fails there
-      // and the visible poster looks unresponsive until a second tap hits
-      // YouTube's own on-screen play button.
-      return safe ? 'https://www.youtube-nocookie.com/embed/' + safe + '?autoplay=1&playsinline=1&rel=0' : '';
+      if (!safe) return '';
+      // Mobile WebKit silently drops an audible autoplay request on an
+      // iframe injected from a click handler (the tap's activation token is
+      // gone by the time the player loads), so a single tap otherwise looks
+      // like it did nothing. Muted autoplay is allowed everywhere; app.js
+      // unmutes over postMessage the instant the player reports ready.
+      // enablejsapi/origin only turn on that postMessage protocol — no
+      // iframe_api script is loaded. playsinline keeps iOS from forcing
+      // fullscreen instead of playing inline.
+      var origin = encodeURIComponent(global.location.origin);
+      return 'https://www.youtube-nocookie.com/embed/' + safe +
+        '?autoplay=1&mute=1&playsinline=1&enablejsapi=1&origin=' + origin + '&rel=0';
     },
 
     safeVideoId: safeVideoId,

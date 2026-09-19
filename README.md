@@ -71,7 +71,7 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 
 - `/`：Hero 統計、曲風快速篩選、最新音樂（最多三列）、音樂人列表
 - `/latest/`、`/artists/`、`/genres/`、`/genre/<slug>/`
-- `/artist/<channelId>/`：簡介（依作品數、主要曲風、最新作品自動生成三語文案）、最新作品、全部作品
+- `/artist/<channelId>/`：簡介（依作品數、主要曲風自動生成三語文案）、最新作品、全部作品
 - `/search/?q=<query>`：藝人與歌曲搜尋結果
 
 ## 歷史作品：瀑布流 + 延遲載入

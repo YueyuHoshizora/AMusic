@@ -26,14 +26,35 @@ python3 -m http.server 4173
 
 ## 資料來源
 
-全部取自 [TrackRadar](https://github.com/YueyuHoshizora/TrackRadar)：
+網站本身不存放任何音樂資料，所有內容都在瀏覽器端即時取自 **TrackRadar**：
 
-- `channels.json`：音樂人清單
-- `latest-videos.json`：各頻道最新作品（標題、縮圖、時長、曲風、發佈時間）
-- `genres.json`：曲風分類定義
-- `data/<channelId>.json`：該音樂人的 `allVideoIds`（歷史作品 ID）
+> https://github.com/YueyuHoshizora/TrackRadar
+
+讀取位址為該 repo 的 raw 檔案（`js/api.js` 的 `BASE`）：
+
+```
+https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
+```
+
+| 檔案 | 用途 | 使用的欄位 |
+| --- | --- | --- |
+| `channels.json` | 音樂人名冊（權威來源：顯示名稱與頭像皆以此為準） | `id`、`name`、`avatarUrl` |
+| `latest-videos.json` | 各頻道最新一首作品 | `updatedAt`、`channels[].channelId`、`latestVideo.{videoId,title,thumbnail,durationSeconds,publishedAt,genre}` |
+| `genres.json` | 曲風分類定義（鍵值即曲風原始字串） | 全部鍵值 |
+| `data/<channelId>.json` | 該音樂人的完整作品 ID 列表 | `allVideoIds`、`latestVideo`、`lastUpdated` |
+
+資料是上游即時抓取的結果，因此本站對兩種情況做了防禦：
+
+- `latestVideo` 可能為 `null`（頻道剛被追蹤、還沒索引到第一首作品）。這類資料列在 `liveFeed()` 一律濾除，不會進入任何畫面。
+- `latest-videos.json` 的 `channelTitle` 在未索引時等於頻道 ID，顯示名稱與頭像因此一律以 `channels.json` 為準（`indexChannels()`）。
 
 歷史作品只有 ID，單曲標題於需要時才向 YouTube oEmbed 取得（失敗時退回 noembed），結果寫入 `localStorage`（key `amusic:vcache:v1`，14 天 TTL），因此二次瀏覽與再次搜尋幾乎不再發送請求。
+
+音樂人頭像直接使用 `avatarUrl`（YouTube 圖片 CDN，`loading="lazy"` + `referrerpolicy="no-referrer"`）；載入失敗時自動退回姓名首字的漸層圓形佔位。
+
+## 音樂人排序
+
+音樂人清單（首頁、`#/artists`、搜尋結果的藝人區）每次繪製都以 Fisher-Yates 洗牌（`shuffled()`），不會有固定的人長期佔據第一個位置。洗牌只作用在複本上，快取的 `channels.json` 陣列不受影響。
 
 ## 頁面
 

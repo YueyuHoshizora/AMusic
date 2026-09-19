@@ -76,6 +76,65 @@
     return s.slice(0, /[A-Za-z]/.test(s[0]) ? 2 : 1).toUpperCase();
   }
 
+  /* Avatar: initials are the always-present fallback; the channel photo from
+   * channels.json fades in on top and is dropped if the request fails. */
+  function avatar(name, url, cls) {
+    var box = h('span', {
+      class: 'avatar' + (cls ? ' ' + cls : ''),
+      'aria-hidden': 'true',
+      text: initials(name)
+    });
+    if (url) {
+      box.appendChild(h('img', {
+        src: url, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer',
+        onload: function () { this.classList.add('ready'); },
+        onerror: function () { this.remove(); }
+      }));
+    }
+    return box;
+  }
+
+  function indexChannels(channels) {
+    var map = Object.create(null);
+    (channels || []).forEach(function (ch) { map[ch.id] = ch; });
+    return map;
+  }
+
+  /* Upstream lists a channel as soon as it is tracked, so latest-videos.json can
+   * carry entries whose first video is not indexed yet (latestVideo: null).
+   * Those rows are not renderable and must never reach a view. */
+  function liveFeed(latest) {
+    var rows = latest && latest.channels ? latest.channels : [];
+    return rows.filter(function (c) { return c && c.latestVideo && c.latestVideo.videoId; });
+  }
+
+  /* Card for a latest-videos.json row; display name and avatar come from
+   * channels.json, which is the authoritative channel catalogue. */
+  function feedCard(c, chIndex, featured) {
+    var known = chIndex[c.channelId];
+    return videoCard(c.latestVideo.videoId, {
+      title: c.latestVideo.title,
+      channelId: c.channelId,
+      channelTitle: (known && known.name) || c.channelTitle,
+      channelAvatar: known && known.avatarUrl,
+      genre: c.latestVideo.genre,
+      publishedAt: c.latestVideo.publishedAt,
+      duration: c.latestVideo.durationSeconds,
+      featured: !!featured
+    });
+  }
+
+  /* Artist listings are shuffled on every render: no one keeps the top slot.
+   * Fisher-Yates on a copy, so the cached channels.json array stays intact. */
+  function shuffled(list) {
+    var out = (list || []).slice();
+    for (var i = out.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    return out;
+  }
+
   /* highlight a plain-text match without innerHTML injection */
   function highlighted(text, matcher) {
     var frag = document.createDocumentFragment();
@@ -126,7 +185,7 @@
 
     var meta = h('div', { class: 'card-meta' }, [
       opts.channelId ? h('a', { class: 'card-artist', href: '#/artist/' + opts.channelId }, [
-        h('span', { class: 'avatar avatar-xs', 'aria-hidden': 'true', text: initials(opts.channelTitle) }),
+        avatar(opts.channelTitle, opts.channelAvatar, 'avatar-xs'),
         h('span', { text: opts.channelTitle || '' })
       ]) : null,
       opts.publishedAt ? h('time', {
@@ -163,7 +222,7 @@
 
   function artistCard(ch, extra) {
     return h('a', { class: 'card artist-card', href: '#/artist/' + ch.id }, [
-      h('span', { class: 'avatar', 'aria-hidden': 'true', text: initials(ch.name) }),
+      avatar(ch.name, ch.avatarUrl),
       h('span', { class: 'artist-info' }, [
         h('strong', { class: 'artist-name' }, [extra && extra.matcher ? highlighted(ch.name, extra.matcher) : ch.name]),
         extra && extra.countText ? h('span', { class: 'muted small', text: extra.countText }) : null,
@@ -263,7 +322,7 @@
 
       // Cards mount with a fixed-ratio thumbnail placeholder; titles stream in after.
       var cards = slice.map(function (id) {
-        var card = videoCard(id, { channelId: ctx.channelId, channelTitle: ctx.channelTitle });
+        var card = videoCard(id, { channelId: ctx.channelId, channelTitle: ctx.channelTitle, channelAvatar: ctx.channelAvatar });
         masonry.add(card);
         return card;
       });
@@ -343,9 +402,12 @@
       var latest = res[0], channels = res[1], genreMap = res[2];
       renderFooterUpdated(latest.updatedAt);
 
+      var chIndex = indexChannels(channels);
+      var feed = liveFeed(latest);
+
       var usedGenres = [];
-      latest.channels.forEach(function (c) {
-        var g = c.latestVideo && c.latestVideo.genre;
+      feed.forEach(function (c) {
+        var g = c.latestVideo.genre;
         if (g && usedGenres.indexOf(g) === -1) usedGenres.push(g);
       });
 
@@ -360,28 +422,19 @@
 
       var grid = wrap.querySelector('#latest-grid');
       clear(grid);
-      var sorted = latest.channels.slice().sort(function (a, b) {
+      feed.slice().sort(function (a, b) {
         return new Date(b.latestVideo.publishedAt) - new Date(a.latestVideo.publishedAt);
-      });
-      sorted.forEach(function (c, i) {
-        grid.appendChild(videoCard(c.latestVideo.videoId, {
-          title: c.latestVideo.title,
-          channelId: c.channelId,
-          channelTitle: c.channelTitle,
-          genre: c.latestVideo.genre,
-          publishedAt: c.latestVideo.publishedAt,
-          duration: c.latestVideo.durationSeconds,
-          featured: i === 0
-        }));
+      }).forEach(function (c, i) {
+        grid.appendChild(feedCard(c, chIndex, i === 0));
       });
 
       var agrid = wrap.querySelector('#artist-grid');
       clear(agrid);
       var byId = {};
-      latest.channels.forEach(function (c) { byId[c.channelId] = c; });
-      channels.forEach(function (ch) {
+      feed.forEach(function (c) { byId[c.channelId] = c; });
+      shuffled(channels).forEach(function (ch) {
         var info = byId[ch.id];
-        agrid.appendChild(artistCard(ch, { genre: info && info.latestVideo && info.latestVideo.genre }));
+        agrid.appendChild(artistCard(ch, { genre: info && info.latestVideo.genre }));
       });
 
       var stats = wrap.querySelector('#home-stats');
@@ -442,10 +495,10 @@
     Promise.all([Api.channels(), Api.latest()]).then(function (res) {
       var channels = res[0], latest = res[1];
       var byId = {};
-      latest.channels.forEach(function (c) { byId[c.channelId] = c; });
+      liveFeed(latest).forEach(function (c) { byId[c.channelId] = c; });
       var grid = wrap.querySelector('#all-artists');
       clear(grid);
-      channels.forEach(function (ch) {
+      shuffled(channels).forEach(function (ch) {
         var info = byId[ch.id];
         var card = artistCard(ch, { genre: info && info.latestVideo && info.latestVideo.genre });
         grid.appendChild(card);
@@ -505,25 +558,17 @@
     append(wrap, [head, h('section', { class: 'block' }, [grid])]);
     render(wrap);
 
-    Api.latest().then(function (latest) {
+    Promise.all([Api.latest(), Api.channels()]).then(function (res) {
+      var chIndex = indexChannels(res[1]);
       clear(grid);
-      var matches = latest.channels.filter(function (c) {
-        return c.latestVideo && entry && c.latestVideo.genre === entry.key;
+      var matches = liveFeed(res[0]).filter(function (c) {
+        return entry && c.latestVideo.genre === entry.key;
       });
       if (!matches.length) {
         grid.appendChild(h('p', { class: 'muted', text: I18N.t('genres.unused') }));
         return;
       }
-      matches.forEach(function (c) {
-        grid.appendChild(videoCard(c.latestVideo.videoId, {
-          title: c.latestVideo.title,
-          channelId: c.channelId,
-          channelTitle: c.channelTitle,
-          genre: c.latestVideo.genre,
-          publishedAt: c.latestVideo.publishedAt,
-          duration: c.latestVideo.durationSeconds
-        }));
-      });
+      matches.forEach(function (c) { grid.appendChild(feedCard(c, chIndex, false)); });
     }).catch(function () { render(errorBox(function () { route(true); })); });
   }
 
@@ -534,7 +579,7 @@
     Promise.all([Api.artist(channelId), Api.channels()]).then(function (res) {
       var data = res[0], channels = res[1];
       var known = channels.filter(function (c) { return c.id === channelId; })[0];
-      var name = data.channelTitle || (known && known.name) || channelId;
+      var name = (known && known.name) || data.channelTitle || channelId;
       var ids = data.allVideoIds || [];
       var latestVideo = data.latestVideo;
 
@@ -554,7 +599,7 @@
         h('section', { class: 'artist-hero' }, [
           h('a', { class: 'back-link', href: '#/artists', text: '← ' + I18N.t('nav.artists') }),
           h('div', { class: 'artist-hero-main' }, [
-            h('span', { class: 'avatar avatar-lg', 'aria-hidden': 'true', text: initials(name) }),
+            avatar(name, known && known.avatarUrl, 'avatar-lg'),
             h('div', {}, [
               h('h1', { text: name }),
               h('p', { class: 'artist-tags' }, [
@@ -583,6 +628,7 @@
               title: latestVideo.title,
               channelId: channelId,
               channelTitle: name,
+              channelAvatar: known && known.avatarUrl,
               genre: latestVideo.genre,
               publishedAt: latestVideo.publishedAt,
               duration: latestVideo.durationSeconds,
@@ -600,7 +646,11 @@
         ])
       ]);
       wrap.appendChild(worksSec);
-      mountWorkGrid(worksSec, ids, { channelId: channelId, channelTitle: name });
+      mountWorkGrid(worksSec, ids, {
+        channelId: channelId,
+        channelTitle: name,
+        channelAvatar: known && known.avatarUrl
+      });
 
       document.title = name + ' · ' + I18N.t('site.name');
     }).catch(function () {
@@ -651,8 +701,10 @@
       return;
     }
 
+    var chIndex = Object.create(null);
     Api.channels().then(function (channels) {
-      var hits = SearchEngine.matchArtists(matcher, channels);
+      chIndex = indexChannels(channels);
+      var hits = shuffled(SearchEngine.matchArtists(matcher, channels));
       var grid = wrap.querySelector('#sr-artists');
       clear(grid);
       if (!hits.length) {
@@ -687,10 +739,12 @@
     function pump() {
       while (shown < limit && pendingHits.length) {
         var item = pendingHits.shift();
+        var known = chIndex[item.channelId];
         masonry.add(videoCard(item.videoId, {
           title: item.title,
           channelId: item.channelId,
-          channelTitle: item.channelTitle,
+          channelTitle: (known && known.name) || item.channelTitle,
+          channelAvatar: known && known.avatarUrl,
           genre: item.genre,
           matcher: matcher
         }));

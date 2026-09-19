@@ -128,7 +128,8 @@ body.nav-open .header-tools { display: flex; }
 .site-nav a[aria-current="page"] { color: var(--text); background: var(--surface-2); border-color: var(--line); }
 
 .search-form { display: flex; gap: .5rem; flex: 0 0 auto; align-items: stretch; }
-.lang-switch, .theme-switch { align-self: flex-start; }
+/* Pills must keep their intrinsic width: the search field absorbs the slack. */
+.lang-switch, .theme-switch { align-self: flex-start; flex: 0 0 auto; }
 .search-form input {
   flex: 1 1 auto; min-width: 0; height: 40px;
   padding: .6rem .9rem; border-radius: var(--radius-sm);
@@ -139,7 +140,7 @@ body.nav-open .header-tools { display: flex; }
 .lang-switch { display: flex; gap: .25rem; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: .2rem; }
 .lang-switch button {
   border: 0; background: transparent; color: var(--muted); cursor: pointer;
-  font: inherit; font-size: .82rem; padding: .3rem .7rem; border-radius: 999px;
+  font: inherit; font-size: .82rem; padding: .3rem .7rem; border-radius: 999px; white-space: nowrap;
 }
 .lang-switch button.active { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
 
@@ -312,6 +313,7 @@ body.nav-open .header-tools { display: flex; }
 /* ---------------- avatars & artists ---------------- */
 
 .avatar {
+  position: relative; overflow: hidden;
   display: inline-grid; place-items: center;
   width: 48px; height: 48px; border-radius: 50%; flex: 0 0 auto;
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
@@ -319,6 +321,13 @@ body.nav-open .header-tools { display: flex; }
 }
 .avatar-xs { width: 22px; height: 22px; font-size: .65rem; }
 .avatar-lg { width: 84px; height: 84px; font-size: 1.9rem; }
+/* Photo sits on top of the initials fallback; it is removed if loading fails. */
+.avatar img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
+  opacity: 0; transition: opacity .2s ease;
+}
+.avatar img.ready { opacity: 1; }
 
 .artist-card { flex-direction: row; align-items: center; gap: .85rem; padding: .9rem; }
 .artist-info { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }

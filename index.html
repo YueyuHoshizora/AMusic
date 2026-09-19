@@ -2,6 +2,13 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<!-- Allow-list every origin the app legitimately talks to. Upstream data is
+     scraped third-party content, so the page must stay unable to load or
+     contact anything that is not listed here.
+     frame-ancestors / X-Frame-Options need a real HTTP header and are ignored
+     in <meta>; GitHub Pages cannot set them, so they are deliberately absent. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com https://*.ytimg.com https://yt3.ggpht.com https://*.ggpht.com https://*.googleusercontent.com; connect-src https://raw.githubusercontent.com https://www.youtube.com https://noembed.com; frame-src https://www.youtube-nocookie.com; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b0b12">
 <title>聽見音樂 A-Music</title>

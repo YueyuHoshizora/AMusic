@@ -84,9 +84,10 @@
       'aria-hidden': 'true',
       text: initials(name)
     });
-    if (url) {
+    var safeUrl = Api.safeImageUrl(url);
+    if (safeUrl) {
       box.appendChild(h('img', {
-        src: url, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer',
+        src: safeUrl, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer',
         onload: function () { this.classList.add('ready'); },
         onerror: function () { this.remove(); }
       }));
@@ -96,7 +97,9 @@
 
   function indexChannels(channels) {
     var map = Object.create(null);
-    (channels || []).forEach(function (ch) { map[ch.id] = ch; });
+    (channels || []).forEach(function (ch) {
+      if (Api.safeChannelId(ch && ch.id)) map[ch.id] = ch;
+    });
     return map;
   }
 
@@ -149,9 +152,11 @@
   /* ---------------- video card ---------------- */
 
   function playInline(thumbWrap, videoId) {
+    var src = Api.embedUrl(videoId);
+    if (!src) return;
     var frame = h('iframe', {
       class: 'player',
-      src: 'https://www.youtube-nocookie.com/embed/' + videoId + '?autoplay=1&rel=0',
+      src: src,
       title: 'YouTube',
       allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture',
       allowfullscreen: true,
@@ -184,7 +189,7 @@
     ]);
 
     var meta = h('div', { class: 'card-meta' }, [
-      opts.channelId ? h('a', { class: 'card-artist', href: '#/artist/' + opts.channelId }, [
+      Api.safeChannelId(opts.channelId) ? h('a', { class: 'card-artist', href: '#/artist/' + opts.channelId }, [
         avatar(opts.channelTitle, opts.channelAvatar, 'avatar-xs'),
         h('span', { text: opts.channelTitle || '' })
       ]) : null,
@@ -221,7 +226,10 @@
   }
 
   function artistCard(ch, extra) {
-    return h('a', { class: 'card artist-card', href: '#/artist/' + ch.id }, [
+    return h('a', {
+      class: 'card artist-card',
+      href: Api.safeChannelId(ch.id) ? '#/artist/' + ch.id : '#/artists'
+    }, [
       avatar(ch.name, ch.avatarUrl),
       h('span', { class: 'artist-info' }, [
         h('strong', { class: 'artist-name' }, [extra && extra.matcher ? highlighted(ch.name, extra.matcher) : ch.name]),
@@ -302,6 +310,9 @@
   }
 
   function mountWorkGrid(host, ids, ctx) {
+    // Upstream id lists are unvalidated input; drop anything that is not a
+    // plain YouTube id before it reaches a URL or an iframe.
+    ids = (ids || []).filter(function (id) { return !!Api.safeVideoId(id); });
     var loaded = 0;
     var busy = false;
     var masonry = createMasonry();
@@ -432,9 +443,14 @@
       clear(agrid);
       var byId = {};
       feed.forEach(function (c) { byId[c.channelId] = c; });
+      // Keep direct node references: building a selector out of an upstream id
+      // would let malformed data break (or widen) the query.
+      var infoById = Object.create(null);
       shuffled(channels).forEach(function (ch) {
         var info = byId[ch.id];
-        agrid.appendChild(artistCard(ch, { genre: info && info.latestVideo.genre }));
+        var card = artistCard(ch, { genre: info && info.latestVideo.genre });
+        infoById[ch.id] = card.querySelector('.artist-info');
+        agrid.appendChild(card);
       });
 
       var stats = wrap.querySelector('#home-stats');
@@ -444,12 +460,12 @@
         // annotate artist cards with track counts
         channels.forEach(function (ch) {
           Api.artist(ch.id).then(function (d) {
-            var card = agrid.querySelector('[href="#/artist/' + ch.id + '"] .artist-info');
-            if (!card || !d.allVideoIds) return;
-            var line = card.querySelector('.track-count');
+            var host = infoById[ch.id];
+            if (!host || !d.allVideoIds) return;
+            var line = host.querySelector('.track-count');
             if (!line) {
               line = h('span', { class: 'muted small track-count' });
-              card.insertBefore(line, card.children[1] || null);
+              host.insertBefore(line, host.children[1] || null);
             }
             line.textContent = I18N.t('artist.count', { n: I18N.formatNumber(d.allVideoIds.length) });
           }).catch(function () {});

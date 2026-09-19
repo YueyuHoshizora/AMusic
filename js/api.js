@@ -67,10 +67,30 @@
     jsonCache[url] = p;
     return p;
   }
+  /* ---------- upstream identifier validation ----------
+   * Ids arrive from a scraped upstream feed and end up inside URLs, iframe
+   * sources and CSS/DOM selectors, so they are validated before any use.
+   */
+
+  var VIDEO_ID = /^[A-Za-z0-9_-]{6,20}$/;
+  var CHANNEL_ID = /^[A-Za-z0-9_-]{6,64}$/;
+
+  function safeVideoId(id) { return typeof id === 'string' && VIDEO_ID.test(id) ? id : null; }
+  function safeChannelId(id) { return typeof id === 'string' && CHANNEL_ID.test(id) ? id : null; }
+
+  /* Avatar/image URLs must be absolute https; anything else is dropped so a
+   * poisoned feed cannot smuggle in data:, blob: or scheme-relative targets. */
+  function safeImageUrl(url) {
+    return typeof url === 'string' && /^https:\/\/[^\s"'<>]+$/.test(url) ? url : null;
+  }
+
 
   /* ---------- per-video metadata (YouTube oEmbed + fallback) ---------- */
 
-  function watchUrl(id) { return 'https://www.youtube.com/watch?v=' + id; }
+  function watchUrl(id) {
+    var safe = safeVideoId(id);
+    return safe ? 'https://www.youtube.com/watch?v=' + safe : '';
+  }
 
   function fetchOEmbed(id, signal) {
     var yt = 'https://www.youtube.com/oembed?url=' + encodeURIComponent(watchUrl(id)) + '&format=json';
@@ -92,6 +112,7 @@
   }
 
   function videoMeta(id, signal) {
+    if (!safeVideoId(id)) return Promise.reject(new Error('bad video id'));
     var hit = metaMem[id];
     if (hit) {
       return Promise.resolve({
@@ -154,8 +175,9 @@
     latest: function () { return getJSON(BASE + 'latest-videos.json'); },
     genres: function () { return getJSON(BASE + 'genres.json'); },
     artist: function (channelId) {
-      if (!/^[\w-]{6,64}$/.test(channelId)) return Promise.reject(new Error('bad channel id'));
-      return getJSON(BASE + 'data/' + channelId + '.json');
+      var safe = safeChannelId(channelId);
+      if (!safe) return Promise.reject(new Error('bad channel id'));
+      return getJSON(BASE + 'data/' + safe + '.json');
     },
 
     videoMeta: videoMeta,
@@ -168,11 +190,25 @@
     },
 
     thumb: function (id, size) {
-      return 'https://i.ytimg.com/vi/' + id + '/' + (size || 'mqdefault') + '.jpg';
+      var safe = safeVideoId(id);
+      var variant = /^[a-z]+$/.test(String(size || '')) ? size : 'mqdefault';
+      return safe ? 'https://i.ytimg.com/vi/' + safe + '/' + variant + '.jpg' : '';
     },
 
+    embedUrl: function (id) {
+      var safe = safeVideoId(id);
+      return safe ? 'https://www.youtube-nocookie.com/embed/' + safe + '?autoplay=1&rel=0' : '';
+    },
+
+    safeVideoId: safeVideoId,
+    safeChannelId: safeChannelId,
+    safeImageUrl: safeImageUrl,
+
     watchUrl: watchUrl,
-    channelUrl: function (channelId) { return 'https://www.youtube.com/channel/' + channelId; }
+    channelUrl: function (channelId) {
+      var safe = safeChannelId(channelId);
+      return safe ? 'https://www.youtube.com/channel/' + safe : '';
+    }
   };
 
   loadCache();

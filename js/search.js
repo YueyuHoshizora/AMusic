@@ -94,7 +94,11 @@
 
       var queue = [];
       catalogues.forEach(function (cat) {
-        cat.ids.forEach(function (id) { queue.push({ id: id, cat: cat }); });
+        cat.ids.forEach(function (id) {
+          // Upstream id lists are untrusted; Api.videoMeta would reject these
+          // anyway, so drop them before they inflate the scan total.
+          if (global.Api.safeVideoId(id)) queue.push({ id: id, cat: cat });
+        });
       });
 
       var total = queue.length;

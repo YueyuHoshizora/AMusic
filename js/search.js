@@ -79,7 +79,9 @@
         return global.Api.artist(ch.id).then(function (data) {
           return {
             channelId: ch.id,
-            channelTitle: data.channelTitle || ch.name,
+            // channels.json is authoritative: data/<id>.json repeats the raw
+            // channel id as channelTitle until the first video is indexed.
+            channelTitle: ch.name || data.channelTitle,
             ids: data.allVideoIds || [],
             latest: data.latestVideo || null
           };

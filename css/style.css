@@ -268,8 +268,10 @@ body.nav-open .header-tools { display: flex; }
   opacity: 0; transition: opacity .25s ease; pointer-events: none;
   animation: card-glow-spin 3.5s linear infinite paused;
 }
-.card:hover::before, .card:focus-within::before { opacity: 1; animation-play-state: running; }
-.card:hover, .card:focus-within { transform: translateY(-2px); border-color: transparent; box-shadow: var(--shadow); }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::before, .card:focus-within::before { opacity: 1; animation-play-state: running; }
+  .card:hover, .card:focus-within { transform: translateY(-2px); border-color: transparent; box-shadow: var(--shadow); }
+}
 .card.unavailable { opacity: .55; }
 
 @property --card-glow-angle {

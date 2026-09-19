@@ -845,9 +845,7 @@
         ? I18N.t('artist.bio', {
             name: name,
             count: I18N.formatNumber(works.length),
-            genre: Genres.label(latestVideo.genre),
-            title: latestVideo.title,
-            date: I18N.formatDate(latestVideo.publishedAt)
+            genre: Genres.label(latestVideo.genre)
           })
         : I18N.t('artist.bioNoVideo', { name: name });
 

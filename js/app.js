@@ -573,12 +573,18 @@
       ));
 
       var grid = wrap.querySelector('#latest-grid');
+      var lastLatestCols = videoGridCols();
       function paintHomeLatest() {
         if (!grid.isConnected) return;
         paintFeedGrid(grid, sorted, chIndex, videoGridCols() * HOME_LATEST_ROWS);
       }
       paintHomeLatest();
-      var onLatestResize = function () { paintHomeLatest(); };
+      var onLatestResize = function () {
+        var cols = videoGridCols();
+        if (cols === lastLatestCols) return;
+        lastLatestCols = cols;
+        paintHomeLatest();
+      };
       global.addEventListener('resize', onLatestResize);
       teardown.push(function () { global.removeEventListener('resize', onLatestResize); });
 

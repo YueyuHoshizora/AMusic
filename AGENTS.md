@@ -15,6 +15,7 @@
 5. **顏色不寫死。** 只能用 `css/style.css` 頂端宣告的 CSS 變數；新增色票要同時補 `[data-theme="dark"]` 與 `[data-theme="light"]` 兩套。
 6. **UI 字串不寫死。** 任何使用者看得到的文字都必須經 `I18N.t()` 或 `data-i18n*`，且 zh／en／ja 三個字典同時補齊。
 7. **歷史作品不得一次載入。** 上游只提供 videoId，標題必須維持延遲、分批解析（見下）。
+8. **授權標頭不得移除。** 專案採 AGPL-3.0-or-later（`LICENSE`）。`index.html`、`css/style.css`、`js/*.js` 每個檔案第一段都有 `SPDX-License-Identifier: AGPL-3.0-or-later`，新增檔案要跟著加；footer 的「原始碼」連結是 AGPL 第 13 條的義務，不得刪除。引入外部程式碼前先確認授權相容（GPL/AGPL 相容才行）。
 
 ## 檔案分工
 

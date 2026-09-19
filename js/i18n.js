@@ -1,4 +1,5 @@
 /* A-Music · i18n core
+ * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
  * Locales: zh (繁體中文) / en (English) / ja (日本語)
  * Everything user-visible goes through I18N.t(key, vars).
  */
@@ -93,6 +94,8 @@
       'footer.note': '本站僅彙整與推廣公開的 YouTube 作品，所有版權歸原創作者所有。',
       'footer.source': '資料來源',
       'footer.updated': '資料更新於 {date}',
+      'footer.code': '原始碼',
+      'footer.license': '授權：AGPL-3.0-or-later',
 
       'notfound.title': '找不到頁面',
       'notfound.desc': '這個網址不存在，或作品已被移除。'
@@ -176,6 +179,8 @@
       'footer.note': 'A-Music only aggregates and promotes publicly available YouTube works. All rights belong to their creators.',
       'footer.source': 'Data source',
       'footer.updated': 'Data updated {date}',
+      'footer.code': 'Source code',
+      'footer.license': 'License: AGPL-3.0-or-later',
 
       'notfound.title': 'Page not found',
       'notfound.desc': 'This address does not exist, or the content has been removed.'
@@ -259,6 +264,8 @@
       'footer.note': '当サイトは公開されている YouTube 作品の紹介のみを行います。著作権はすべて原作者に帰属します。',
       'footer.source': 'データ提供',
       'footer.updated': 'データ更新日 {date}',
+      'footer.code': 'ソースコード',
+      'footer.license': 'ライセンス：AGPL-3.0-or-later',
 
       'notfound.title': 'ページが見つかりません',
       'notfound.desc': 'この URL は存在しないか、コンテンツが削除されています。'

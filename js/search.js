@@ -1,4 +1,5 @@
 /* A-Music · search
+ * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
  * Wildcard matching (`*`, `?`) over artist names and song titles.
  * Song titles are not shipped as a bundle: the scanner walks each artist's
  * allVideoIds, serves anything already cached instantly, and resolves the rest

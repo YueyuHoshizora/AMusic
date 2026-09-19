@@ -88,3 +88,27 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 3. `index.html`：在 `.lang-switch` 加一顆 `data-lang="xx"` 按鈕
 
 介面字串一律走 `I18N.t()`；靜態標記使用 `data-i18n` / `data-i18n-ph` / `data-i18n-aria` / `data-i18n-html`。切換語言會即時重繪目前頁面並寫入 `localStorage`（key `amusic:lang`），首次造訪則依瀏覽器語言判斷。
+
+## 授權
+
+本專案以 **GNU Affero General Public License v3.0 或更新版本**（AGPL-3.0-or-later）釋出，全文見 [`LICENSE`](./LICENSE)。
+
+```
+Copyright (C) 2026 Yueyu Hoshizora
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along
+with this program.  If not, see <https://www.gnu.org/licenses/>.
+```
+
+AGPL 的重點在第 13 條：**若你修改本站並讓使用者透過網路使用，必須向這些使用者提供你修改後的完整原始碼**。為此頁面 footer 常設「原始碼」連結指向本 repo，改站時請一併把連結改成你自己的版本。
+
+授權範圍僅限本 repo 的程式碼與樣式。網站呈現的音樂作品、縮圖、頻道名稱與頭像屬於各自的創作者與 YouTube，不在本授權範圍內；上游資料由 [TrackRadar](https://github.com/YueyuHoshizora/TrackRadar) 提供，其授權以該 repo 為準。

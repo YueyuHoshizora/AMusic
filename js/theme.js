@@ -1,4 +1,5 @@
 /* A-Music · theme
+ * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
  * Two themes: light / dark. The stored choice wins; otherwise the OS preference
  * is followed live (until the visitor picks one explicitly).
  */

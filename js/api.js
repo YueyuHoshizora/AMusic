@@ -1,4 +1,5 @@
 /* A-Music · data layer
+ * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
  * Upstream: TrackRadar (static JSON on GitHub) + YouTube oEmbed for per-video titles.
  * Nothing is bundled: channel catalogues are fetched on demand, video metadata is
  * resolved lazily in small batches and cached in localStorage.

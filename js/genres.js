@@ -1,4 +1,5 @@
 /* A-Music · genre localisation
+ * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
  * Keys are the exact genre strings used by TrackRadar (genres.json keys and
  * `video.genre` values). genres.json stays the source of truth for which
  * genres exist; this table only supplies localised labels + descriptions.

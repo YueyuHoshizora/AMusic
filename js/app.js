@@ -1,4 +1,5 @@
 /* A-Music · views + hash router */
+/* Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later */
 (function (global) {
   'use strict';
 

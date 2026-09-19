@@ -109,3 +109,5 @@ CSP 生效驗證：載入首頁與任一藝人頁，console 不得出現 `Refuse
 - 用 `innerHTML` 顯示上游或使用者輸入
 - 放寬或移除 CSP 來「讓功能動起來」——先確認該來源是否真的必要，必要才加入 allow-list
 - 為了通過驗證而用 `try/catch` 吞掉例外
+- 移除檔案頂端的 `SPDX-License-Identifier: AGPL-3.0-or-later`、`LICENSE`，或 footer 的「原始碼」連結（AGPL 第 13 條義務）
+- 貼入授權不明或與 AGPL-3.0 不相容的第三方程式碼（供應鏈與授權風險同等看待）

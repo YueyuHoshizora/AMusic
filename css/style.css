@@ -1,4 +1,5 @@
 /* A-Music · 聽見音樂 — mobile-first responsive styles */
+/* Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later */
 
 /* Two explicit themes. js/theme.js always sets data-theme on <html>
  * (stored choice, otherwise the OS preference), so no media query is needed. */

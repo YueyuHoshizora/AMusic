@@ -1,8 +1,8 @@
 /* A-Music · genre localisation
  * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
- * Keys are the exact genre strings used by TrackRadar (genres.json keys and
- * `video.genre` values). genres.json stays the source of truth for which
- * genres exist; this table only supplies localised labels + descriptions.
+ * Keys match TrackRadar genres.json (and `video.genre`) when the genre exists
+ * upstream. Extra local entries (e.g. Vocaloid) still appear in the catalogue;
+ * they stay unused until the feed emits the same key.
  */
 (function (global) {
   'use strict';
@@ -84,6 +84,13 @@
       dzh: '動畫、漫畫、遊戲相關的主題曲與片頭片尾曲。',
       den: 'Theme, opening and ending songs tied to anime, manga and games.',
       dja: 'アニメ・漫画・ゲーム関連の主題歌やOP／ED。'
+    },
+    'Vocaloid': {
+      slug: 'vocaloid', icon: '🎤',
+      zh: 'Vocaloid', en: 'Vocaloid', ja: 'ボーカロイド',
+      dzh: '以 Vocaloid 等虛擬歌手引擎合成人聲的創作歌曲。',
+      den: 'Original songs written for Vocaloid and other virtual-singer engines.',
+      dja: '初音ミクなどボーカロイド／仮想歌手エンジンで歌声を合成した楽曲。'
     },
     '遊戲音樂 Game Music': {
       slug: 'game', icon: '🎮',

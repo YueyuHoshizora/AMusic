@@ -112,6 +112,31 @@
     return rows.filter(function (c) { return c && c.latestVideo && c.latestVideo.videoId; });
   }
 
+  function sortedLiveFeed(latest) {
+    return liveFeed(latest).slice().sort(function (a, b) {
+      return new Date(b.latestVideo.publishedAt) - new Date(a.latestVideo.publishedAt);
+    });
+  }
+
+  /* Match .video-grid breakpoints in css/style.css. */
+  function videoGridCols() {
+    var w = global.innerWidth || 0;
+    if (w >= 1240) return 4;
+    if (w >= 900) return 3;
+    if (w >= 560) return 2;
+    return 1;
+  }
+
+  var HOME_LATEST_ROWS = 4;
+
+  function paintFeedGrid(grid, feed, chIndex, limit) {
+    clear(grid);
+    var list = limit != null ? feed.slice(0, limit) : feed;
+    list.forEach(function (c, i) {
+      grid.appendChild(feedCard(c, chIndex, i === 0));
+    });
+  }
+
   /* Card for a latest-videos.json row; display name and avatar come from
    * channels.json, which is the authoritative channel catalogue. */
   function feedCard(c, chIndex, featured) {
@@ -398,7 +423,8 @@
 
     var chips = h('div', { class: 'chip-row', id: 'home-chips' });
     var latestSec = h('section', { class: 'block' }, [
-      section('home.latest', 'home.latest.desc'),
+      section('home.latest', 'home.latest.desc',
+        h('a', { class: 'section-link', href: '#/latest', text: I18N.t('home.viewAll') })),
       h('div', { class: 'grid video-grid', id: 'latest-grid' }, [spinner()])
     ]);
     var artistSec = h('section', { class: 'block' }, [
@@ -416,6 +442,7 @@
 
       var chIndex = indexChannels(channels);
       var feed = liveFeed(latest);
+      var sorted = sortedLiveFeed(latest);
 
       var usedGenres = [];
       feed.forEach(function (c) {
@@ -433,12 +460,14 @@
       ));
 
       var grid = wrap.querySelector('#latest-grid');
-      clear(grid);
-      feed.slice().sort(function (a, b) {
-        return new Date(b.latestVideo.publishedAt) - new Date(a.latestVideo.publishedAt);
-      }).forEach(function (c, i) {
-        grid.appendChild(feedCard(c, chIndex, i === 0));
-      });
+      function paintHomeLatest() {
+        if (!grid.isConnected) return;
+        paintFeedGrid(grid, sorted, chIndex, videoGridCols() * HOME_LATEST_ROWS);
+      }
+      paintHomeLatest();
+      var onLatestResize = function () { paintHomeLatest(); };
+      global.addEventListener('resize', onLatestResize);
+      teardown.push(function () { global.removeEventListener('resize', onLatestResize); });
 
       var agrid = wrap.querySelector('#artist-grid');
       clear(agrid);
@@ -530,6 +559,23 @@
     }).catch(function () { render(errorBox(function () { route(true); })); });
   }
 
+  function viewLatest() {
+    var wrap = h('div', { class: 'view' }, [
+      h('section', { class: 'block' }, [
+        section('home.latest', 'home.latest.desc'),
+        h('div', { class: 'grid video-grid', id: 'all-latest' }, [spinner()])
+      ])
+    ]);
+    render(wrap);
+
+    Promise.all([Api.latest(), Api.channels()]).then(function (res) {
+      var grid = wrap.querySelector('#all-latest');
+      if (!grid || !grid.isConnected) return;
+      paintFeedGrid(grid, sortedLiveFeed(res[0]), indexChannels(res[1]));
+    }).catch(function () { render(errorBox(function () { route(true); })); });
+  }
+
+
   function viewGenres() {
     var wrap = h('div', { class: 'view' }, [
       h('section', { class: 'block' }, [
@@ -548,7 +594,16 @@
       });
       var grid = wrap.querySelector('#genre-grid');
       clear(grid);
+      var keys = [];
+      var seen = Object.create(null);
+      Object.keys(Genres.table).forEach(function (key) {
+        seen[key] = true;
+        keys.push(key);
+      });
       Object.keys(genreMap).forEach(function (key) {
+        if (!seen[key]) keys.push(key);
+      });
+      keys.forEach(function (key) {
         var n = counts[key] || 0;
         grid.appendChild(h('a', { class: 'card genre-card' + (n ? '' : ' empty'), href: '#/genre/' + Genres.slug(key) }, [
           h('span', { class: 'genre-icon', 'aria-hidden': 'true', text: Genres.icon(key) }),
@@ -891,6 +946,7 @@
 
     var parts = r.path.split('/').filter(Boolean);
     if (parts.length === 0) return viewHome();
+    if (parts[0] === 'latest') return viewLatest();
     if (parts[0] === 'artists') return viewArtists();
     if (parts[0] === 'genres') return viewGenres();
     if (parts[0] === 'genre' && parts[1]) return viewGenre(parts[1]);

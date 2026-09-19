@@ -25,7 +25,7 @@
 | `css/style.css` | 全站樣式、兩套主題變數、RWD（斷點 560 / 900 / 1240 px） | 不寫死顏色、不加第三方字體 |
 | `js/theme.js` | 亮／暗主題；在 `<head>` 內同步執行 | 不要移到 `</body>` 前（會主題閃爍） |
 | `js/i18n.js` | `META` 語系設定、`DICT` 三語字典、`t()`／`applyStatic()`／`Intl` 格式化 | 不在其他檔案內嵌字串字典 |
-| `js/genres.js` | 19 種曲風的 slug／emoji／三語名稱與說明 | 鍵值必須等於上游 `genres.json` 的原始字串 |
+| `js/genres.js` | 曲風 slug／emoji／三語名稱與說明（含上游沒有的本機分類如 Vocaloid） | 與上游重疊的鍵值必須等於 `genres.json` 的原始字串 |
 | `js/api.js` | 唯一的資料層：TrackRadar JSON、YouTube oEmbed、localStorage 快取 | 其他檔案不得直接 `fetch()` 上游 |
 | `js/search.js` | 萬用字元比對、全曲庫漸進式掃描 | 不做 DOM 操作 |
 | `js/app.js` | Hash 路由、各頁 view、卡片、瀑布流、延遲載入 | 不直接組 raw URL（一律經 `Api`） |
@@ -64,7 +64,7 @@ python3 -m http.server 4173    # 必須用 HTTP；file:// 會被擋 fetch
 # http://127.0.0.1:4173/
 ```
 
-改動後至少走過：`#/`、`#/artists`、`#/genres`、`#/genre/<slug>`、`#/artist/<channelId>`、`#/search?q=可*`，逐項確認：
+改動後至少走過：`#/`、`#/latest`、`#/artists`、`#/genres`、`#/genre/<slug>`、`#/artist/<channelId>`、`#/search?q=可*`，逐項確認：
 
 - console 無 error、無 pageerror、無 requestfailed（view 的 `.catch` 會把例外偽裝成「載入失敗」畫面，只看畫面會誤判）
 - 三個語系都切一遍，日期／數字格式跟著變

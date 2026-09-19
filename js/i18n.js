@@ -98,6 +98,7 @@
       'footer.code': '原始碼',
       'footer.license': '授權：AGPL-3.0-or-later',
       'footer.privacy': '隱私權說明',
+      'footer.sitemap': '網站地圖',
 
       'notfound.title': '找不到頁面',
       'notfound.desc': '這個網址不存在，或作品已被移除。',
@@ -188,6 +189,7 @@
       'footer.code': 'Source code',
       'footer.license': 'License: AGPL-3.0-or-later',
       'footer.privacy': 'Privacy policy',
+      'footer.sitemap': 'Sitemap',
 
       'notfound.title': 'Page not found',
       'notfound.desc': 'This address does not exist, or the content has been removed.',
@@ -278,6 +280,7 @@
       'footer.code': 'ソースコード',
       'footer.license': 'ライセンス：AGPL-3.0-or-later',
       'footer.privacy': 'プライバシー',
+      'footer.sitemap': 'サイトマップ',
 
       'notfound.title': 'ページが見つかりません',
       'notfound.desc': 'この URL は存在しないか、コンテンツが削除されています。',

@@ -3,6 +3,13 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
+<!-- GitHub Pages cannot set real Cache-Control headers, so the HTML document
+     asks intermediaries not to cache it: a stale shell would keep serving an
+     old asset-version query string after a deploy. js/css themselves stay
+     cacheable — tools/version-assets.py busts them per-file via content hash. -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <!-- Allow-list every origin the app legitimately talks to. Upstream data is
      scraped third-party content, so the page must stay unable to load or
      contact anything that is not listed here.

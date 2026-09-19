@@ -238,7 +238,11 @@
 
     embedUrl: function (id) {
       var safe = safeVideoId(id);
-      return safe ? 'https://www.youtube-nocookie.com/embed/' + safe + '?autoplay=1&rel=0' : '';
+      // playsinline=1 keeps iOS Safari from treating the embed as a
+      // fullscreen-only player; without it, autoplay=1 silently fails there
+      // and the visible poster looks unresponsive until a second tap hits
+      // YouTube's own on-screen play button.
+      return safe ? 'https://www.youtube-nocookie.com/embed/' + safe + '?autoplay=1&playsinline=1&rel=0' : '';
     },
 
     safeVideoId: safeVideoId,

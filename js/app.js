@@ -179,6 +179,22 @@
 
   /* ---------------- video card ---------------- */
 
+  // Only one card plays at a time: a second player would talk over the first,
+  // and the iframe API is not loaded here, so the running one is torn down
+  // rather than paused. The thumbnail children are kept so the card can go
+  // back to its poster state instead of being rebuilt.
+  var playing = null;
+
+  function stopPlaying() {
+    var cur = playing;
+    if (!cur) return;
+    playing = null;
+    clear(cur.wrap);
+    cur.wrap.classList.remove('playing');
+    if (!document.contains(cur.wrap)) return;
+    for (var i = 0; i < cur.kids.length; i++) cur.wrap.appendChild(cur.kids[i]);
+  }
+
   function playInline(thumbWrap, videoId) {
     var src = Api.embedUrl(videoId);
     if (!src) return;
@@ -191,6 +207,10 @@
       loading: 'lazy',
       frameborder: '0'
     });
+    stopPlaying();
+    var kids = [];
+    for (var i = 0; i < thumbWrap.childNodes.length; i++) kids.push(thumbWrap.childNodes[i]);
+    playing = { wrap: thumbWrap, kids: kids };
     clear(thumbWrap);
     thumbWrap.classList.add('playing');
     thumbWrap.appendChild(frame);
@@ -1024,6 +1044,7 @@
   /* ---------------- shell ---------------- */
 
   function render(node) {
+    playing = null; // the running iframe goes away with the old view
     clear(main);
     main.appendChild(node);
   }

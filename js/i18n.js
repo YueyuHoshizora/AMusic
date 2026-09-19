@@ -81,6 +81,7 @@
       'artist.allLoaded': '已載入全部 {n} 首作品',
       'artist.back': '返回',
       'artist.notFound': '找不到這位音樂人',
+      'artist.worksEmpty': '目前沒有可顯示的作品清單。',
 
       'video.watch': '在 YouTube 觀看',
       'video.unavailable': '此影片目前無法取得資訊',
@@ -174,6 +175,7 @@
       'artist.allLoaded': 'All {n} tracks loaded',
       'artist.back': 'Back',
       'artist.notFound': 'Artist not found',
+      'artist.worksEmpty': 'No track listing is available right now.',
 
       'video.watch': 'Watch on YouTube',
       'video.unavailable': 'Details unavailable for this video',
@@ -267,6 +269,7 @@
       'artist.allLoaded': '全 {n} 作品を読み込みました',
       'artist.back': '戻る',
       'artist.notFound': 'アーティストが見つかりません',
+      'artist.worksEmpty': '表示できる作品リストがありません。',
 
       'video.watch': 'YouTube で見る',
       'video.unavailable': 'この動画の情報は取得できません',

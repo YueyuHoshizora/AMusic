@@ -112,6 +112,19 @@
     return out;
   }
 
+  /* Upstream occasionally ships an empty or stale allVideoIds while latestVideo
+   * is populated; fold the latest release in so a catalogue never loses it. */
+  function catalogueWorks(data) {
+    var out = parseWorks(data && data.allVideoIds);
+    var latest = data ? parseWork(data.latestVideo) : null;
+    if (!latest) return out;
+    for (var i = 0; i < out.length; i++) {
+      if (out[i].videoId === latest.videoId) return out;
+    }
+    out.unshift(latest);
+    return out;
+  }
+
 
   /* ---------- per-video metadata (YouTube oEmbed + fallback) ---------- */
 
@@ -233,6 +246,7 @@
     safeImageUrl: safeImageUrl,
     parseWork: parseWork,
     parseWorks: parseWorks,
+    catalogueWorks: catalogueWorks,
 
     watchUrl: watchUrl,
     channelUrl: function (channelId) {

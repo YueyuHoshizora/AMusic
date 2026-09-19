@@ -405,7 +405,7 @@
           channelId: id,
           channelTitle: ch.name || data.channelTitle,
           avatarUrl: ch.avatarUrl,
-          works: Api.parseWorks(data.allVideoIds),
+          works: Api.catalogueWorks(data),
           latest: data.latestVideo || null
         };
       }, function () {
@@ -424,6 +424,10 @@
     // Upstream id lists are unvalidated input; drop anything that is not a
     // plain YouTube id before it reaches a URL or an iframe.
     var items = normalizeWorkItems(list, ctx);
+    if (!items.length) {
+      append(host, [h('div', { class: 'empty-state' }, [h('p', { class: 'muted', text: I18N.t('artist.worksEmpty') })])]);
+      return;
+    }
     var loaded = 0;
     var busy = false;
     var masonry = createMasonry();
@@ -790,7 +794,7 @@
       var data = res[0], channels = res[1];
       var known = channels.filter(function (c) { return c.id === channelId; })[0];
       var name = (known && known.name) || data.channelTitle || channelId;
-      var works = Api.parseWorks(data.allVideoIds);
+      var works = Api.catalogueWorks(data);
       var latestVideo = data.latestVideo;
 
       clear(wrap);
@@ -852,7 +856,7 @@
       var worksSec = h('section', { class: 'block' }, [
         h('header', { class: 'section-head' }, [
           h('h2', { text: I18N.t('artist.works') }),
-          h('p', { class: 'muted', text: I18N.t('artist.worksDesc', { n: PAGE_SIZE }) })
+          works.length ? h('p', { class: 'muted', text: I18N.t('artist.worksDesc', { n: PAGE_SIZE }) }) : null
         ])
       ]);
       wrap.appendChild(worksSec);

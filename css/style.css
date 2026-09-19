@@ -227,6 +227,7 @@ body.nav-open .header-tools { display: flex; }
 .chip.active { color: var(--text); border-color: var(--brand); }
 @media (hover: hover) and (pointer: fine) {
   .chip:hover { color: var(--text); border-color: var(--brand); }
+  .chip-row { flex-wrap: wrap; overflow-x: visible; }
 }
 
 .badge {

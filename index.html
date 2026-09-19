@@ -16,6 +16,10 @@
 <meta name="description" content="彙整並推廣華語獨立音樂人的 YouTube 作品，依曲風探索，隨時發現新聲音。">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="canonical" href="https://a-music.app/">
+<link rel="alternate" hreflang="zh-Hant" href="https://a-music.app/">
+<link rel="alternate" hreflang="en" href="https://a-music.app/?lang=en">
+<link rel="alternate" hreflang="ja" href="https://a-music.app/?lang=ja">
+<link rel="alternate" hreflang="x-default" href="https://a-music.app/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -37,6 +41,34 @@
 <meta name="twitter:description" content="彙整並推廣華語獨立音樂人的 YouTube 作品，依曲風探索，隨時發現新聲音。">
 <meta name="twitter:image" content="https://a-music.app/assets/og-image.png">
 <meta name="author" content="Yueyu Hoshizora">
+
+<!-- Structured data. Only the apex is a crawlable URL (routing is hash-based),
+     so the graph describes the site itself and stays static. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://a-music.app/#org",
+      "name": "聽見音樂 A-Music",
+      "url": "https://a-music.app/",
+      "logo": "https://a-music.app/assets/logo.svg",
+      "founder": { "@type": "Person", "name": "Yueyu Hoshizora" }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://a-music.app/#site",
+      "name": "聽見音樂 A-Music",
+      "url": "https://a-music.app/",
+      "description": "彙整並推廣華語獨立音樂人的 YouTube 作品，依曲風探索，隨時發現新聲音。",
+      "inLanguage": ["zh-Hant", "en", "ja"],
+      "publisher": { "@id": "https://a-music.app/#org" },
+      "license": "https://www.gnu.org/licenses/agpl-3.0.html"
+    }
+  ]
+}
+</script>
 
 <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
 <link rel="preconnect" href="https://i.ytimg.com">

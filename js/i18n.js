@@ -100,7 +100,10 @@
       'footer.privacy': '隱私權說明',
 
       'notfound.title': '找不到頁面',
-      'notfound.desc': '這個網址不存在，或作品已被移除。'
+      'notfound.desc': '這個網址不存在，或作品已被移除。',
+
+      'seo.artist.desc': '{name} 在 YouTube 的 {n} 首作品，依曲風整理並持續更新。',
+      'seo.search.desc': '在聽見音樂搜尋獨立音樂人與歌曲，支援 * 與 ? 萬用字元。'
     },
 
     en: {
@@ -187,7 +190,10 @@
       'footer.privacy': 'Privacy policy',
 
       'notfound.title': 'Page not found',
-      'notfound.desc': 'This address does not exist, or the content has been removed.'
+      'notfound.desc': 'This address does not exist, or the content has been removed.',
+
+      'seo.artist.desc': '{n} tracks by {name} on YouTube, sorted by genre and kept up to date.',
+      'seo.search.desc': 'Search independent artists and songs on A-Music, with * and ? wildcards.'
     },
 
     ja: {
@@ -274,14 +280,69 @@
       'footer.privacy': 'プライバシー',
 
       'notfound.title': 'ページが見つかりません',
-      'notfound.desc': 'この URL は存在しないか、コンテンツが削除されています。'
+      'notfound.desc': 'この URL は存在しないか、コンテンツが削除されています。',
+
+      'seo.artist.desc': '{name} の YouTube 作品 {n} 曲。ジャンル別に整理し、随時更新しています。',
+      'seo.search.desc': 'A-Music でインディーアーティストと楽曲を検索。* と ? のワイルドカードに対応。'
     }
   };
 
   var listeners = [];
   var current = DEFAULT_LANG;
+  var pageMeta = null;        // per-route override; the router clears it
+
+  var SITE_URL = 'https://a-music.app/';
+
+  /* Language lives in the query string, never in the hash: `/?lang=en#/genres`
+   * leaves hash routing untouched while giving crawlers three distinct URLs
+   * that sitemap.xml and the hreflang links can actually point at. */
+  function urlLang() {
+    var m = /[?&]lang=([a-z-]+)/i.exec(global.location.search);
+    if (!m) return null;
+    var l = m[1].toLowerCase();
+    return DICT[l] ? l : null;
+  }
+
+  /* Canonical follows the URL, not the detected language: Googlebot requests
+   * `/` with an en Accept-Language, and pointing that at `/?lang=en` would
+   * hand the apex's ranking to a variant. Only an explicit ?lang= counts. */
+  function canonicalUrl() {
+    var l = urlLang();
+    return l && l !== DEFAULT_LANG ? SITE_URL + '?lang=' + l : SITE_URL;
+  }
+
+  function syncUrlLang(lang) {
+    if (!global.history || !global.history.replaceState) return;
+    var parts = global.location.search.replace(/^\?/, '').split('&').filter(function (p) {
+      return p && p.split('=')[0] !== 'lang';
+    });
+    if (lang !== DEFAULT_LANG) parts.push('lang=' + lang);
+    var qs = parts.length ? '?' + parts.join('&') : '';
+    try {
+      global.history.replaceState(null, '', global.location.pathname + qs + global.location.hash);
+    } catch (e) { /* file:// and sandboxed frames reject replaceState */ }
+  }
+
+  /* Search-result and not-found views are thin/duplicate by nature: keep them
+   * out of the index if a crawler ever renders one, and drop the tag again on
+   * the way back to a real page. */
+  function setRobots(noindex) {
+    var m = document.querySelector('meta[name="robots"]');
+    if (!noindex) {
+      if (m) m.parentNode.removeChild(m);
+      return;
+    }
+    if (!m) {
+      m = document.createElement('meta');
+      m.setAttribute('name', 'robots');
+      document.head.appendChild(m);
+    }
+    m.setAttribute('content', 'noindex, follow');
+  }
 
   function detect() {
+    var fromUrl = urlLang();
+    if (fromUrl) return fromUrl;
     var stored = null;
     try { stored = global.localStorage.getItem(STORAGE_KEY); } catch (e) { /* private mode */ }
     if (stored && DICT[stored]) return stored;
@@ -325,6 +386,7 @@
       current = lang;
       try { global.localStorage.setItem(STORAGE_KEY, lang); } catch (e) { /* ignore */ }
       document.documentElement.lang = META[lang].htmlLang;
+      syncUrlLang(lang);
       I18N.applyStatic(document);
       for (var i = 0; i < listeners.length; i++) listeners[i](lang);
     },
@@ -349,10 +411,19 @@
       if (scope === document) I18N.syncSEO();
     },
 
-    /* Sync SEO / Open Graph / Twitter meta tags for current language. */
+    /* Per-route override, set by each view in app.js. null = site defaults. */
+    setPageMeta: function (meta) {
+      pageMeta = meta && (meta.title || meta.desc || meta.noindex) ? meta : null;
+      I18N.syncSEO();
+    },
+
+    /* Sync SEO / Open Graph / Twitter meta tags for current route + language. */
     syncSEO: function () {
-      var title = I18N.t('site.title');
-      var desc  = I18N.t('site.desc');
+      var title = pageMeta && pageMeta.title
+        ? pageMeta.title + ' · ' + I18N.t('site.name')
+        : I18N.t('site.title');
+      var desc = (pageMeta && pageMeta.desc) || I18N.t('site.desc');
+      setRobots(pageMeta && pageMeta.noindex);
       document.title = title;
       document.documentElement.lang = META[current].htmlLang;
       var m = document.querySelector('meta[name="description"]');
@@ -367,6 +438,11 @@
       if (m) m.setAttribute('content', title);
       m = document.querySelector('meta[name="twitter:description"]');
       if (m) m.setAttribute('content', desc);
+      var url = canonicalUrl();
+      var link = document.querySelector('link[rel="canonical"]');
+      if (link) link.setAttribute('href', url);
+      m = document.querySelector('meta[property="og:url"]');
+      if (m) m.setAttribute('content', url);
     },
 
     /* ---- locale-aware formatters ---- */

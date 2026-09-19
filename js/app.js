@@ -41,9 +41,11 @@
 
   function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
 
-  function section(titleKey, descKey, extra) {
+  /* `tag` lets a top-level view promote its section heading to the page's
+   * single h1; nested blocks (home) keep h2. */
+  function section(titleKey, descKey, extra, tag) {
     return h('header', { class: 'section-head' }, [
-      h('h2', { text: I18N.t(titleKey) }),
+      h(tag || 'h2', { text: I18N.t(titleKey) }),
       descKey ? h('p', { class: 'muted', text: I18N.t(descKey) }) : null,
       extra || null
     ]);
@@ -619,10 +621,11 @@
   function viewArtists() {
     var wrap = h('div', { class: 'view' }, [
       h('section', { class: 'block' }, [
-        section('artists.title', 'artists.desc'),
+        section('artists.title', 'artists.desc', null, 'h1'),
         h('div', { class: 'grid artist-grid', id: 'all-artists' }, [spinner()])
       ])
     ]);
+    I18N.setPageMeta({ title: I18N.t('artists.title'), desc: I18N.t('artists.desc') });
     render(wrap);
 
     Promise.all([Api.channels(), Api.latest()]).then(function (res) {
@@ -649,10 +652,11 @@
   function viewLatest() {
     var wrap = h('div', { class: 'view' }, [
       h('section', { class: 'block' }, [
-        section('home.latest', 'home.latest.desc'),
+        section('home.latest', 'home.latest.desc', null, 'h1'),
         h('div', { class: 'grid video-grid', id: 'all-latest' }, [spinner()])
       ])
     ]);
+    I18N.setPageMeta({ title: I18N.t('home.latest'), desc: I18N.t('home.latest.desc') });
     render(wrap);
 
     Promise.all([Api.latest(), Api.channels()]).then(function (res) {
@@ -666,10 +670,11 @@
   function viewGenres() {
     var wrap = h('div', { class: 'view' }, [
       h('section', { class: 'block' }, [
-        section('genres.title', 'genres.desc'),
+        section('genres.title', 'genres.desc', null, 'h1'),
         h('div', { class: 'grid genre-grid', id: 'genre-grid' }, [spinner()])
       ])
     ]);
+    I18N.setPageMeta({ title: I18N.t('genres.title'), desc: I18N.t('genres.desc') });
     render(wrap);
 
     Promise.all([Api.genres(), Api.channels()]).then(function (res) {
@@ -720,6 +725,10 @@
     var host = h('section', { class: 'block' }, [spinner()]);
     append(wrap, [head, host]);
     render(wrap);
+    I18N.setPageMeta({
+      title: entry ? Genres.label(entry.key) : slug,
+      desc: entry ? Genres.description(entry.key) : null
+    });
 
     Api.channels().then(function (channels) {
       var chIndex = indexChannels(channels);
@@ -833,7 +842,10 @@
         channelAvatar: known && known.avatarUrl
       });
 
-      document.title = name + ' · ' + I18N.t('site.name');
+      I18N.setPageMeta({
+        title: name,
+        desc: I18N.t('seo.artist.desc', { name: name, n: I18N.formatNumber(works.length) })
+      });
     }).catch(function () {
       clear(wrap);
       append(wrap, [
@@ -991,7 +1003,11 @@
     });
     teardown.push(function () { handle.abort(); });
 
-    document.title = I18N.t('search.title', { q: matcher.raw }) + ' · ' + I18N.t('site.name');
+    I18N.setPageMeta({
+      title: I18N.t('search.title', { q: matcher.raw }),
+      desc: I18N.t('seo.search.desc'),
+      noindex: true
+    });
   }
 
   function viewNotFound() {
@@ -1002,6 +1018,7 @@
         h('a', { class: 'btn primary', href: '#/', text: I18N.t('common.backHome') })
       ])
     ]));
+    I18N.setPageMeta({ title: I18N.t('notfound.title'), desc: I18N.t('notfound.desc'), noindex: true });
   }
 
   /* ---------------- shell ---------------- */
@@ -1048,6 +1065,7 @@
     var r = parseHash();
     if (!force && currentRoute === r.raw) return;
     currentRoute = r.raw;
+    I18N.setPageMeta(null);
     runTeardown();
     markActiveNav(r.path);
     closeNav();

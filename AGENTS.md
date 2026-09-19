@@ -22,6 +22,8 @@
 | 檔案 | 職責 | 不該做的事 |
 | --- | --- | --- |
 | `index.html` | 外殼：header／nav／搜尋列／footer，靜態字串用 `data-i18n*` | 不放頁面內容（由 `js/app.js` 渲染進 `#main`） |
+| `404.html` | GitHub Pages 的真 404（三語靜態、`noindex`） | 不要改成轉址到 `/`（會變 soft 404，讓爬蟲把死網址當首頁副本） |
+| `sitemap.xml` / `robots.txt` | 可爬 URL 清單與 hreflang 對應 | 不要列 `#/` 路由（片段會被丟棄，全部等於 `/`） |
 | `css/style.css` | 全站樣式、兩套主題變數、RWD（斷點 560 / 900 / 1240 px） | 不寫死顏色、不加第三方字體 |
 | `js/theme.js` | 亮／暗主題；在 `<head>` 內同步執行 | 不要移到 `</body>` 前（會主題閃爍） |
 | `js/i18n.js` | `META` 語系設定、`DICT` 三語字典、`t()`／`applyStatic()`／`Intl` 格式化 | 不在其他檔案內嵌字串字典 |
@@ -54,6 +56,15 @@
 - 無萬用字元：NFKC 正規化後的不分大小寫子字串比對。
 - `*` = 任意長度、`?` = 單一字元，且是**未錨定**（「包含」）語意——`可*` 要能命中 `COYA可夜`。不要改回錨定全字串比對。
 - 歌曲搜尋需掃描全曲庫：先吃 JSON 內建標題，再吃 localStorage 快取（零請求），未命中的才併發 6 條抓 oEmbed，並可 `abort()`。
+
+## SEO 的既定作法
+
+- **語系在 query string，不在 hash**：`/?lang=en#/genres`。`urlLang()` 優先於 localStorage 與 `navigator`，`setLang()` 用 `history.replaceState` 改寫 `lang` 參數（保留其他參數與 hash，不觸發 `hashchange`）。這是唯一能讓 `sitemap.xml` 與 `hreflang` 指到真實 URL 的做法。
+- **canonical 跟著 URL，不跟著顯示語言**：Googlebot 用 en 的 Accept-Language 抓 `/`，若把 canonical 指到 `/?lang=en` 會把 apex 的權重讓給變體。只有明確帶 `?lang=` 才給變體 canonical（`canonicalUrl()`）。
+- **每頁 meta 走 `I18N.setPageMeta({title, desc, noindex})`**：`route()` 先 `setPageMeta(null)` 還原站台預設，各 view 自己設定。`syncSEO()` 一次同步 `<title>`、description、`og:*`、`twitter:*`、canonical 與 `robots`。
+- 搜尋頁與找不到頁面必須 `noindex: true`（內容單薄／重複）。
+- 每個 view 只能有一個 `h1`：`section(titleKey, descKey, extra, 'h1')` 用在頂層頁面，首頁的區塊標題維持 `h2`（`h1` 在 hero）。
+- `index.html` 的 JSON-LD 只描述站台本身（Organization + WebSite）。不要為 `#/` 路由補 `BreadcrumbList`／`MusicGroup`：那些 URL 不可能被單獨索引，等於死碼。
 
 ## 驗證方式（改完一定要做）
 

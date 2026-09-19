@@ -167,7 +167,7 @@ body.nav-open .header-tools { display: flex; }
 .block { display: flex; flex-direction: column; gap: 1rem; }
 
 .section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem 1rem; }
-.section-head h2 { font-size: clamp(1.15rem, 2.6vw, 1.5rem); }
+.section-head h1, .section-head h2 { font-size: clamp(1.15rem, 2.6vw, 1.5rem); }
 .section-head .muted { flex: 1 1 200px; font-size: .9rem; }
 .section-link { color: var(--brand); font-size: .9rem; }
 .section-link:hover { text-decoration: underline; }

@@ -24,7 +24,9 @@ python3 -m http.server 4173
 | `js/search.js` | 萬用字元比對與全曲庫漸進式掃描 |
 | `js/app.js` | Hash 路由與各頁面 view、瀑布流、延遲載入 |
 | `assets/og-image.png` | 社群分享圖（1200×630） |
-| `robots.txt` | 允許所有搜尋引擎收錄 |
+| `robots.txt` | 允許所有搜尋引擎收錄，並指向 `sitemap.xml` |
+| `sitemap.xml` | 可爬 URL（首頁與 `?lang=` 語系變體）與 hreflang 對應 |
+| `404.html` | GitHub Pages 的真 404 頁（三語、`noindex`，不轉址） |
 | `CNAME` | GitHub Pages 自訂網域 `a-music.app` |
 
 ## 資料來源
@@ -91,6 +93,16 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 3. `index.html`：在 `.lang-switch` 加一顆 `data-lang="xx"` 按鈕
 
 介面字串一律走 `I18N.t()`；靜態標記使用 `data-i18n` / `data-i18n-ph` / `data-i18n-aria` / `data-i18n-html`。切換語言會即時重繪目前頁面並寫入 `localStorage`（key `amusic:lang`），首次造訪則依瀏覽器語言判斷。
+
+語言也可以用網址指定：`https://a-music.app/?lang=en`、`?lang=ja`（`?lang=` 優先於 `localStorage` 與瀏覽器語言）。切換語言時會以 `history.replaceState` 更新這個參數，hash 路由與其他參數都保留，所以 `/?lang=ja#/genres` 可以直接分享。
+
+## SEO
+
+- 路由是 hash（`#/...`），搜尋引擎會丟掉片段，因此**可爬的 URL 只有首頁與三個語系變體**。`sitemap.xml` 只列這些，不假裝 `#/` 路由是獨立網址。
+- canonical 跟著網址而不是顯示語言：`/` 永遠 canonical 到 `/`，只有明確帶 `?lang=en` / `?lang=ja` 才 canonical 到對應變體，避免 apex 的權重被語系變體吃掉。
+- 每個頁面都有自己的 `<title>`、`description`、`og:*` 與 `twitter:*`（`I18N.setPageMeta()`，切頁時還原站台預設），並維持單一 `h1`。
+- 搜尋結果頁與找不到頁面加上 `robots: noindex, follow`。
+- `index.html` 內嵌 JSON-LD（`Organization` + `WebSite`）描述站台本身。
 
 ## 授權
 

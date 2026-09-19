@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A-Music sitemap
+     Routing is hash-based (#/...), and search engines discard the fragment:
+     every #/ route collapses to the URL it hangs off. Listing them here would
+     be three dozen duplicate entries for "/". Only the query-string language
+     variants are distinct, crawlable URLs, so only those are declared. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://a-music.app/</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://a-music.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://a-music.app/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://a-music.app/?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://a-music.app/"/>
+  </url>
+  <url>
+    <loc>https://a-music.app/?lang=en</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://a-music.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://a-music.app/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://a-music.app/?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://a-music.app/"/>
+  </url>
+  <url>
+    <loc>https://a-music.app/?lang=ja</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-Hant" href="https://a-music.app/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://a-music.app/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://a-music.app/?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://a-music.app/"/>
+  </url>
+</urlset>

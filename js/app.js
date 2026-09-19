@@ -861,10 +861,16 @@
                 latestVideo ? genreBadge(latestVideo.genre) : null,
                 data.lastUpdated ? h('span', { class: 'muted small', text: I18N.t('footer.updated', { date: I18N.formatDate(data.lastUpdated) }) }) : null
               ]),
-              h('a', {
-                class: 'btn primary', href: Api.channelUrl(channelId), target: '_blank', rel: 'noopener',
-                text: I18N.t('artist.channel')
-              })
+              h('div', { class: 'artist-actions' }, [
+                h('a', {
+                  class: 'btn primary', href: Api.channelUrl(channelId), target: '_blank', rel: 'noopener',
+                  text: I18N.t('artist.channel')
+                }),
+                Api.playlistUrl(channelId) ? h('a', {
+                  class: 'btn ghost', href: Api.playlistUrl(channelId), target: '_blank', rel: 'noopener',
+                  text: I18N.t('artist.playlist')
+                }) : null
+              ])
             ])
           ])
         ]),

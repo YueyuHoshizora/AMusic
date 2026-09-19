@@ -263,6 +263,15 @@
     channelUrl: function (channelId) {
       var safe = safeChannelId(channelId);
       return safe ? 'https://www.youtube.com/channel/' + safe : '';
+    },
+    /* Every channel's uploads playlist id is the channel id with its "UC"
+     * prefix swapped for "UU"; YouTube derives it deterministically, no API
+     * call needed. Channel ids that don't start with UC have no such
+     * playlist, so the button is simply omitted. */
+    playlistUrl: function (channelId) {
+      var safe = safeChannelId(channelId);
+      if (!safe || safe.slice(0, 2) !== 'UC') return '';
+      return 'https://www.youtube.com/playlist?list=UU' + safe.slice(2);
     }
   };
 

@@ -142,7 +142,10 @@ def video_entries(channel, videos, meta, templates, seen):
             '    <video:thumbnail_loc>%s</video:thumbnail_loc>' % (YT_THUMB % vid),
             '    <video:title>%s</video:title>' % html.escape(title),
             '    <video:description>%s</video:description>' % html.escape(desc),
-            '    <video:player_loc>%s</video:player_loc>' % (YT_EMBED % vid),
+            # allow_embed says the player may be embedded: YouTube's /embed
+            # endpoint answers "error 153" to a request with no Referer, which
+            # is exactly how a crawler would fetch this URL on its own.
+            '    <video:player_loc allow_embed="yes">%s</video:player_loc>' % (YT_EMBED % vid),
         ]
         # Only the newest track of each artist carries a timestamp and a
         # runtime upstream; both tags are optional, so the rest go without

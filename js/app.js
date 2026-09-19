@@ -127,7 +127,7 @@
     return 1;
   }
 
-  var HOME_LATEST_ROWS = 4;
+  var HOME_LATEST_ROWS = 3;
 
   function paintFeedGrid(grid, feed, chIndex, limit) {
     clear(grid);

@@ -574,9 +574,13 @@
 
       var grid = wrap.querySelector('#latest-grid');
       var lastLatestCols = videoGridCols();
+      function homeLatestLimit() {
+        var cols = videoGridCols();
+        return cols === 1 ? 9 : cols * HOME_LATEST_ROWS;
+      }
       function paintHomeLatest() {
         if (!grid.isConnected) return;
-        paintFeedGrid(grid, sorted, chIndex, videoGridCols() * HOME_LATEST_ROWS);
+        paintFeedGrid(grid, sorted, chIndex, homeLatestLimit());
       }
       paintHomeLatest();
       var onLatestResize = function () {

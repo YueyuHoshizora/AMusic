@@ -104,7 +104,9 @@
       'notfound.desc': '這個網址不存在，或作品已被移除。',
 
       'seo.artist.desc': '{name} 在 YouTube 的 {n} 首作品，依曲風整理並持續更新。',
-      'seo.search.desc': '在聽見音樂搜尋獨立音樂人與歌曲，支援 * 與 ? 萬用字元。'
+      'seo.search.desc': '在聽見音樂搜尋獨立音樂人與歌曲，支援 * 與 ? 萬用字元。',
+      'seo.video.desc': '{name} 的作品《{title}》，曲風：{genre}。在聽見音樂 A-Music 線上收聽。',
+      'seo.video.desc.plain': '{name} 的作品《{title}》。在聽見音樂 A-Music 線上收聽。'
     },
 
     en: {
@@ -195,7 +197,9 @@
       'notfound.desc': 'This address does not exist, or the content has been removed.',
 
       'seo.artist.desc': '{n} tracks by {name} on YouTube, sorted by genre and kept up to date.',
-      'seo.search.desc': 'Search independent artists and songs on A-Music, with * and ? wildcards.'
+      'seo.search.desc': 'Search independent artists and songs on A-Music, with * and ? wildcards.',
+      'seo.video.desc': '“{title}” by {name} — {genre}. Listen on A-Music.',
+      'seo.video.desc.plain': '“{title}” by {name}. Listen on A-Music.'
     },
 
     ja: {
@@ -286,7 +290,9 @@
       'notfound.desc': 'この URL は存在しないか、コンテンツが削除されています。',
 
       'seo.artist.desc': '{name} の YouTube 作品 {n} 曲。ジャンル別に整理し、随時更新しています。',
-      'seo.search.desc': 'A-Music でインディーアーティストと楽曲を検索。* と ? のワイルドカードに対応。'
+      'seo.search.desc': 'A-Music でインディーアーティストと楽曲を検索。* と ? のワイルドカードに対応。',
+      'seo.video.desc': '{name} の楽曲「{title}」／{genre}。A-Music で視聴できます。',
+      'seo.video.desc.plain': '{name} の楽曲「{title}」。A-Music で視聴できます。'
     }
   };
 

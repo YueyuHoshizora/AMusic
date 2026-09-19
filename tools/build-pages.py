@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # A-Music · route shell generator
 # Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
-"""Emit one real index.html per route, plus sitemap.xml and the 404 fallback.
+"""Emit one real index.html per route, plus both sitemaps and the 404 fallback.
 
 GitHub Pages has no rewrite rules: a path only answers 200 if a file exists
 there. Without these shells, path routing would make every route a 404 and
@@ -35,6 +35,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Directories this script owns. Everything inside is regenerated from scratch,
 # so a removed genre or artist never leaves an orphan page behind.
 OWNED_DIRS = ['latest', 'artists', 'genres', 'genre', 'artist', 'search']
+
+# Videos live on their artist's page: js/app.js swaps the thumbnail for a
+# youtube-nocookie iframe in place, so that page really does host the player
+# a video sitemap promises. Each video is listed exactly once.
+YT_THUMB = 'https://i.ytimg.com/vi/%s/hqdefault.jpg'
+YT_EMBED = 'https://www.youtube-nocookie.com/embed/%s'
+VIDEO_ID = re.compile(r'^[A-Za-z0-9_-]{11}$')
+VIDEO_TITLE_MAX = 100          # Google truncates past this; do it ourselves
 
 # Upstream fingerprint, so the five-minute schedule can bail out cheaply.
 STAMP_FILE = '.pages-stamp'
@@ -108,6 +116,50 @@ def genre_entries(genres_src):
     return out
 
 
+def video_entries(channel, videos, meta, templates, seen):
+    """One <video:video> per track of one artist, in upstream order.
+
+    Titles and ids come from a scraped feed: ids are checked against the
+    YouTube id shape before they reach a URL, and anything without a title is
+    skipped — video:title is required and must not be invented."""
+    out = []
+    for item in videos:
+        if not isinstance(item, dict):
+            continue
+        vid = str(item.get('videoId') or '')
+        title = (item.get('title') or '').strip()
+        if not VIDEO_ID.match(vid) or not title or vid in seen:
+            continue
+        seen.add(vid)
+        if len(title) > VIDEO_TITLE_MAX:
+            title = title[:VIDEO_TITLE_MAX - 1].rstrip() + '\u2026'
+        genre = (item.get('genre') or '').strip()
+        # Upstream leaves genre empty when its classifier is unsure; saying
+        # "genre: —" would be worse than not mentioning it.
+        desc = (templates[1] if not genre else templates[0]) \
+            .replace('{name}', channel).replace('{title}', title).replace('{genre}', genre)
+        rows = [
+            '    <video:thumbnail_loc>%s</video:thumbnail_loc>' % (YT_THUMB % vid),
+            '    <video:title>%s</video:title>' % html.escape(title),
+            '    <video:description>%s</video:description>' % html.escape(desc),
+            '    <video:player_loc>%s</video:player_loc>' % (YT_EMBED % vid),
+        ]
+        # Only the newest track of each artist carries a timestamp and a
+        # runtime upstream; both tags are optional, so the rest go without
+        # rather than with a guess.
+        extra = meta.get(vid) or {}
+        seconds = extra.get('durationSeconds')
+        if isinstance(seconds, int) and 0 < seconds <= 28800:
+            rows.append('    <video:duration>%d</video:duration>' % seconds)
+        published = str(extra.get('publishedAt') or '')
+        if re.match(r'^\d{4}-\d{2}-\d{2}T[\d:.]+(?:Z|[+-]\d{2}:\d{2})$', published):
+            rows.append('    <video:publication_date>%s</video:publication_date>' % published)
+        if genre:
+            rows.append('    <video:tag>%s</video:tag>' % html.escape(genre))
+        out.append('  <video:video>\n' + '\n'.join(rows) + '\n  </video:video>')
+    return out
+
+
 def sub_once(text, pattern, replacement, label):
     new, n = re.subn(pattern, lambda _m: replacement, text, count=1)
     if n != 1:
@@ -176,14 +228,22 @@ def main():
     def t(key):
         return zh_string(i18n_src, key)
 
-    tracks = {}
+    catalogue, tracks = {}, {}
     for ch in channels:
         try:
             data = fetch_json('data/%s.json' % ch['id'])
-            tracks[ch['id']] = len(data.get('allVideoIds') or [])
+            catalogue[ch['id']] = data.get('allVideoIds') or []
         except Exception as exc:                      # upstream gaps must not abort the build
             print('  ! %s: %s' % (ch['id'], exc))
-            tracks[ch['id']] = 0
+            catalogue[ch['id']] = []
+        tracks[ch['id']] = len(catalogue[ch['id']])
+
+    # Runtime and publish time exist only for each artist's newest track.
+    newest = {}
+    for entry in latest.get('channels') or []:
+        video = (entry or {}).get('latestVideo') or {}
+        if video.get('videoId'):
+            newest[str(video['videoId'])] = video
 
     routes = [
         ('/latest/', t('home.latest') + suffix, t('home.latest.desc'), True),
@@ -237,6 +297,26 @@ def main():
           '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
           + '\n'.join(entries) + '\n</urlset>\n')
     print('wrote sitemap.xml with %d urls' % len(entries))
+
+    # Videos get their own sitemap: one <url> per artist page, carrying every
+    # track that plays on it. Keeping them out of sitemap.xml means the page
+    # sitemap stays small enough to be re-read on every crawl.
+    video_desc = (t('seo.video.desc'), t('seo.video.desc.plain'))
+    seen, blocks = set(), []
+    for ch in channels:
+        videos = video_entries(ch.get('name') or ch['id'], catalogue.get(ch['id']) or [],
+                               newest, video_desc, seen)
+        if not videos:
+            continue
+        blocks.append('  <url>\n    <loc>%s/artist/%s/</loc>\n%s\n  </url>'
+                      % (ORIGIN, ch['id'], '\n'.join(videos)))
+    write('sitemap-videos.xml',
+          '<?xml version="1.0" encoding="UTF-8"?>\n'
+          '<!-- Generated by tools/build-pages.py. Do not edit by hand. -->\n'
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
+          '        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n'
+          + '\n'.join(blocks) + '\n</urlset>\n')
+    print('wrote sitemap-videos.xml with %d videos on %d pages' % (len(seen), len(blocks)))
     write(STAMP_FILE, stamp + '\n')
 
 

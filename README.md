@@ -23,11 +23,12 @@ python3 -m http.server 4173
 | `js/api.js` | 資料層：TrackRadar JSON + YouTube oEmbed，含 localStorage 快取與併發控制 |
 | `js/search.js` | 萬用字元比對與全曲庫漸進式掃描 |
 | `js/app.js` | Path 路由（pushState / popstate / 連結攔截）與各頁面 view、瀑布流、延遲載入 |
-| `tools/build-pages.py` | 產生各路由 `index.html`、`404.html`、`sitemap.xml`（唯一模板是 `index.html`） |
+| `tools/build-pages.py` | 產生各路由 `index.html`、`404.html`、`sitemap.xml`、`sitemap-videos.xml`（唯一模板是 `index.html`） |
 | `.github/workflows/build-pages.yml` | 每 5 分鐘重跑產生器，上游有變動才 commit |
 | `assets/og-image.png` | 社群分享圖（1200×630） |
-| `robots.txt` | 允許所有搜尋引擎收錄，並指向 `sitemap.xml` |
+| `robots.txt` | 允許所有搜尋引擎收錄，並指向兩份 sitemap |
 | `sitemap.xml` | 全部可爬路由與 hreflang 對應（產生器輸出，勿手改） |
+| `sitemap-videos.xml` | 影片 sitemap：每位音樂人頁面掛上該頁可播放的全部作品（產生器輸出，勿手改） |
 | `404.html` | 無 shell 路徑的 fallback（產生器輸出，`noindex`） |
 | `latest/`、`artists/`、`genres/`、`genre/<slug>/`、`artist/<id>/`、`search/` | 產生器輸出的路由 shell（勿手改） |
 | `.pages-stamp` | 上游指紋，讓排程能快速判斷「沒變就不用重建」 |

@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://a-music.app/sitemap.xml
+Sitemap: https://a-music.app/sitemap-videos.xml

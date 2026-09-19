@@ -23,8 +23,8 @@
 | --- | --- | --- |
 | `index.html` | 外殼：header／nav／搜尋列／footer，靜態字串用 `data-i18n*` | 不放頁面內容（由 `js/app.js` 渲染進 `#main`） |
 | `404.html` | 無 shell 路徑的 fallback（產生器輸出，`noindex`、無 canonical） | 不要手改；不要改成轉址到 `/`（會變 soft 404） |
-| `sitemap.xml` / `robots.txt` | 可爬 URL 清單與 hreflang 對應（`sitemap.xml` 由產生器輸出） | `sitemap.xml` 不要手改 |
-| `tools/build-pages.py` | 從 `index.html` 產生各路由 shell、`404.html`、`sitemap.xml`、`.pages-stamp` | 不要讓它變成瀏覽器端的相依 |
+| `sitemap.xml` / `sitemap-videos.xml` / `robots.txt` | 可爬 URL 清單與 hreflang 對應；影片 sitemap 把每首作品掛在其音樂人頁 | 兩份 sitemap 都不要手改；影片的 `<loc>` 必須是真的能播該片的頁面 |
+| `tools/build-pages.py` | 從 `index.html` 產生各路由 shell、`404.html`、`sitemap.xml`、`sitemap-videos.xml`、`.pages-stamp` | 不要讓它變成瀏覽器端的相依 |
 | `.github/workflows/build-pages.yml` | 每 5 分鐘重跑產生器，有 diff 才 commit | 不要拿掉 `--if-changed`（排程會變成每 5 分鐘抓 21 份上游 JSON） |
 | `css/style.css` | 全站樣式、兩套主題變數、RWD（斷點 560 / 900 / 1240 px） | 不寫死顏色、不加第三方字體 |
 | `js/theme.js` | 亮／暗主題；在 `<head>` 內同步執行 | 不要移到 `</body>` 前（會主題閃爍） |

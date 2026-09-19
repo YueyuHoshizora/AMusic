@@ -4,7 +4,7 @@ Traditional Chinese follows the English text.
 
 ## Supported versions
 
-Only the `main` branch is deployed (GitHub Pages: <https://yueyuhoshizora.github.io/AMusic/>). There are no versioned releases. Please test against current `main`.
+Only the `main` branch is deployed (GitHub Pages: <https://a-music.app/>). There are no versioned releases. Please test against current `main`.
 
 ## Reporting a vulnerability
 
@@ -75,7 +75,7 @@ Engineering notes for people changing this code live in [`CLAUDE.md`](./CLAUDE.m
 
 ## 支援版本
 
-只有 `main` 會部署到 GitHub Pages（<https://yueyuhoshizora.github.io/AMusic/>），沒有版號發行。請以當前 `main` 為準。
+只有 `main` 會部署到 GitHub Pages（<https://a-music.app/>），沒有版號發行。請以當前 `main` 為準。
 
 ## 如何回報弱點
 

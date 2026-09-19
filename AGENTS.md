@@ -4,7 +4,7 @@
 
 ## 專案是什麼
 
-靜態音樂推廣網站「聽見音樂 A-Music」，把 [TrackRadar](https://github.com/YueyuHoshizora/TrackRadar) 蒐集到的音樂人與 YouTube 作品做成可瀏覽、可搜尋的站台。部署在 GitHub Pages（`main` 分支根目錄），線上位址 <https://yueyuhoshizora.github.io/AMusic/>。
+靜態音樂推廣網站「聽見音樂 A-Music」，把 [TrackRadar](https://github.com/YueyuHoshizora/TrackRadar) 蒐集到的音樂人與 YouTube 作品做成可瀏覽、可搜尋的站台。部署在 GitHub Pages（`main` 分支根目錄），線上位址 <https://a-music.app/>。
 
 ## 硬性限制（不要打破）
 

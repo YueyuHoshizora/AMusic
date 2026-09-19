@@ -1,7 +1,7 @@
 # Privacy Policy · 隱私權說明
 
 Last updated: 2026-09-19  
-Site: <https://yueyuhoshizora.github.io/AMusic/>  
+Site: <https://a-music.app/>  
 Operator: Yueyu Hoshizora (<yueyuhoshizora@gmail.com>)
 
 Traditional Chinese follows the English text.
@@ -32,7 +32,7 @@ Opening a page causes the browser to fetch files from this site (HTML, CSS, JS, 
 
 | Destination | Why | What is sent |
 | --- | --- | --- |
-| GitHub Pages (`yueyuhoshizora.github.io`) | Hosts this site | Ordinary page request (IP address and user-agent are visible to GitHub as for any website) |
+| GitHub Pages (`a-music.app`) | Hosts this site | Ordinary page request (IP address and user-agent are visible to GitHub as for any website) |
 | `raw.githubusercontent.com` (TrackRadar) | Channel list, latest videos, genres, per-artist video ids | Ordinary HTTPS request; no account token |
 | `i.ytimg.com`, `yt3.ggpht.com`, `*.googleusercontent.com` | Video thumbnails and channel avatars | Image request. Avatars are loaded with `referrerpolicy="no-referrer"` |
 | `www.youtube.com` (oEmbed) | Resolve a video title when it is not in the local cache | The YouTube watch URL of that video id |
@@ -92,7 +92,7 @@ Security issues: see [SECURITY.md](./SECURITY.md)
 
 | 目的地 | 原因 | 送出的內容 |
 | --- | --- | --- |
-| GitHub Pages（`yueyuhoshizora.github.io`） | 託管本站 | 一般網頁請求（IP、User-Agent 與任何網站一樣會被 GitHub 看到） |
+| GitHub Pages（`a-music.app`） | 託管本站 | 一般網頁請求（IP、User-Agent 與任何網站一樣會被 GitHub 看到） |
 | `raw.githubusercontent.com`（TrackRadar） | 音樂人名冊、最新作品、曲風、各頻道 video id | 一般 HTTPS 請求，不含帳號憑證 |
 | `i.ytimg.com`、`yt3.ggpht.com`、`*.googleusercontent.com` | 影片縮圖與頻道頭像 | 圖片請求。頭像帶 `referrerpolicy="no-referrer"` |
 | `www.youtube.com`（oEmbed） | 本機快取沒有標題時，解析影片標題 | 該 video id 的 YouTube 觀看網址 |

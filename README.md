@@ -1,6 +1,6 @@
 # 聽見音樂 A-Music
 
-推廣獨立音樂人 YouTube 作品的靜態網站。無建置流程、無相依套件，純 HTML / CSS / ES5-safe JavaScript。
+推廣獨立音樂人 YouTube 作品的靜態網站。無建置流程、無相依套件，純 HTML / CSS / ES5-safe JavaScript。線上：<https://a-music.app/>。
 
 ## 執行
 
@@ -25,6 +25,7 @@ python3 -m http.server 4173
 | `js/app.js` | Hash 路由與各頁面 view、瀑布流、延遲載入 |
 | `assets/og-image.png` | 社群分享圖（1200×630） |
 | `robots.txt` | 允許所有搜尋引擎收錄 |
+| `CNAME` | GitHub Pages 自訂網域 `a-music.app` |
 
 ## 資料來源
 

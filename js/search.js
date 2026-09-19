@@ -1,9 +1,9 @@
 /* A-Music · search
  * Copyright (C) 2026 Yueyu Hoshizora · SPDX-License-Identifier: AGPL-3.0-or-later
  * Wildcard matching (`*`, `?`) over artist names and song titles.
- * Song titles are not shipped as a bundle: the scanner walks each artist's
- * allVideoIds, serves anything already cached instantly, and resolves the rest
- * in bounded batches so results stream in without a giant upfront download.
+ * The scanner walks each artist's allVideoIds. Titles/genres shipped on
+ * those records resolve instantly; anything still missing falls back to
+ * the title cache, then oEmbed in bounded batches.
  */
 (function (global) {
   'use strict';
@@ -83,11 +83,10 @@
             // channels.json is authoritative: data/<id>.json repeats the raw
             // channel id as channelTitle until the first video is indexed.
             channelTitle: ch.name || data.channelTitle,
-            ids: data.allVideoIds || [],
-            latest: data.latestVideo || null
+            works: global.Api.parseWorks(data.allVideoIds)
           };
         }, function () {
-          return { channelId: ch.id, channelTitle: ch.name, ids: [], latest: null };
+          return { channelId: ch.id, channelTitle: ch.name, works: [] };
         });
       }));
     }).then(function (catalogues) {
@@ -95,10 +94,8 @@
 
       var queue = [];
       catalogues.forEach(function (cat) {
-        cat.ids.forEach(function (id) {
-          // Upstream id lists are untrusted; Api.videoMeta would reject these
-          // anyway, so drop them before they inflate the scan total.
-          if (global.Api.safeVideoId(id)) queue.push({ id: id, cat: cat });
+        cat.works.forEach(function (w) {
+          queue.push({ id: w.videoId, title: w.title, genre: w.genre, cat: cat });
         });
       });
 
@@ -106,16 +103,20 @@
       var done = 0;
       var pending = [];
 
-      // Pass 1 — everything already cached resolves with zero network cost.
+      // Pass 1 — JSON titles and the local cache resolve with zero network cost.
       queue.forEach(function (item) {
-        var cached = global.Api.cachedTitle(item.id);
-        if (cached === undefined) { pending.push(item); return; }
+        var title = item.title;
+        if (!title) {
+          var cached = global.Api.cachedTitle(item.id);
+          if (cached === undefined) { pending.push(item); return; }
+          title = cached;
+        }
         done++;
-        if (cached && matcher.test(cached)) {
+        if (title && matcher.test(title)) {
           onResult({
-            videoId: item.id, title: cached,
+            videoId: item.id, title: title,
             channelId: item.cat.channelId, channelTitle: item.cat.channelTitle,
-            genre: item.cat.latest && item.cat.latest.videoId === item.id ? item.cat.latest.genre : null
+            genre: item.genre
           });
         }
       });
@@ -138,7 +139,7 @@
             onResult({
               videoId: item.id, title: meta.title,
               channelId: item.cat.channelId, channelTitle: item.cat.channelTitle,
-              genre: item.cat.latest && item.cat.latest.videoId === item.id ? item.cat.latest.genre : null
+              genre: item.genre
             });
           }
           return next();

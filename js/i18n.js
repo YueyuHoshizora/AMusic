@@ -63,7 +63,7 @@
 
       'genre.all': '全部曲風',
       'genres.title': '曲風分類',
-      'genres.desc': '以下曲風標籤由 TrackRadar 自動判別，點擊可篩選最新作品。',
+      'genres.desc': '曲風標籤由 TrackRadar 依每首作品自動判別。點進分類後會上架該標籤的全部歌曲。',
       'genres.unused': '目前尚無作品',
 
       'artists.title': '音樂人',
@@ -150,7 +150,7 @@
 
       'genre.all': 'All genres',
       'genres.title': 'Genres',
-      'genres.desc': 'Genre tags are classified automatically by TrackRadar. Tap one to filter the latest releases.',
+      'genres.desc': 'Genre tags are classified automatically by TrackRadar for each track. Open a genre to list every matching song.',
       'genres.unused': 'No releases yet',
 
       'artists.title': 'Artists',
@@ -237,7 +237,7 @@
 
       'genre.all': 'すべてのジャンル',
       'genres.title': 'ジャンル一覧',
-      'genres.desc': 'ジャンルタグは TrackRadar により自動判定されています。タップすると最新作を絞り込めます。',
+      'genres.desc': 'ジャンルタグは TrackRadar が曲ごとに自動判定します。開くとそのタグの全曲を掲載します。',
       'genres.unused': '作品はまだありません',
 
       'artists.title': 'アーティスト',

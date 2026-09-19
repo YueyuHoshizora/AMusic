@@ -85,6 +85,33 @@
     return typeof url === 'string' && /^https:\/\/[^\s"'<>]+$/.test(url) ? url : null;
   }
 
+  /* data/<channelId>.json allVideoIds is a list of {videoId,title,genre}
+   * (legacy feeds were bare id strings). Drop anything that is not a
+   * plain YouTube id; titles/genres stay optional plain text. */
+  function parseWork(it) {
+    if (typeof it === 'string') {
+      var sid = safeVideoId(it);
+      return sid ? { videoId: sid, title: null, genre: null } : null;
+    }
+    if (!it || typeof it !== 'object') return null;
+    var videoId = safeVideoId(it.videoId);
+    if (!videoId) return null;
+    var title = typeof it.title === 'string' ? it.title.replace(/[\u0000-\u001f]/g, '').trim() : '';
+    var genre = typeof it.genre === 'string' ? it.genre.replace(/[\u0000-\u001f]/g, '').trim() : '';
+    if (title.length > 300) title = title.slice(0, 300);
+    if (genre.length > 80) genre = genre.slice(0, 80);
+    return { videoId: videoId, title: title || null, genre: genre || null };
+  }
+
+  function parseWorks(list) {
+    var out = [];
+    (list || []).forEach(function (it) {
+      var w = parseWork(it);
+      if (w) out.push(w);
+    });
+    return out;
+  }
+
 
   /* ---------- per-video metadata (YouTube oEmbed + fallback) ---------- */
 
@@ -204,6 +231,8 @@
     safeVideoId: safeVideoId,
     safeChannelId: safeChannelId,
     safeImageUrl: safeImageUrl,
+    parseWork: parseWork,
+    parseWorks: parseWorks,
 
     watchUrl: watchUrl,
     channelUrl: function (channelId) {

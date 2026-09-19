@@ -335,10 +335,73 @@
     };
   }
 
-  function mountWorkGrid(host, ids, ctx) {
+  function normalizeWorkItems(list, ctx) {
+    ctx = ctx || {};
+    var out = [];
+    (list || []).forEach(function (it) {
+      var videoId;
+      var rec;
+      if (typeof it === 'string') {
+        videoId = Api.safeVideoId(it);
+        if (!videoId) return;
+        rec = {
+          videoId: videoId,
+          channelId: ctx.channelId,
+          channelTitle: ctx.channelTitle,
+          channelAvatar: ctx.channelAvatar,
+          genre: ctx.genre,
+          title: null,
+          publishedAt: null,
+          duration: null
+        };
+      } else if (it && typeof it === 'object') {
+        videoId = Api.safeVideoId(it.videoId || it.id);
+        if (!videoId) return;
+        rec = {
+          videoId: videoId,
+          channelId: it.channelId || ctx.channelId,
+          channelTitle: it.channelTitle || ctx.channelTitle,
+          channelAvatar: it.channelAvatar || ctx.channelAvatar,
+          genre: it.genre || ctx.genre,
+          title: it.title || null,
+          publishedAt: it.publishedAt || null,
+          duration: it.duration || null
+        };
+      } else {
+        return;
+      }
+      out.push(rec);
+    });
+    return out;
+  }
+
+  function loadCatalogues(channels) {
+    return Promise.all((channels || []).map(function (ch) {
+      var id = ch.id || ch.channelId;
+      return Api.artist(id).then(function (data) {
+        return {
+          channelId: id,
+          channelTitle: ch.name || data.channelTitle,
+          avatarUrl: ch.avatarUrl,
+          works: Api.parseWorks(data.allVideoIds),
+          latest: data.latestVideo || null
+        };
+      }, function () {
+        return {
+          channelId: id,
+          channelTitle: ch.name,
+          avatarUrl: ch.avatarUrl,
+          works: [],
+          latest: null
+        };
+      });
+    }));
+  }
+
+  function mountWorkGrid(host, list, ctx) {
     // Upstream id lists are unvalidated input; drop anything that is not a
     // plain YouTube id before it reaches a URL or an iframe.
-    ids = (ids || []).filter(function (id) { return !!Api.safeVideoId(id); });
+    var items = normalizeWorkItems(list, ctx);
     var loaded = 0;
     var busy = false;
     var masonry = createMasonry();
@@ -349,43 +412,67 @@
     append(host, [masonry.el, sentinel, h('div', { class: 'load-more' }, [status, moreBtn])]);
 
     function loadNext() {
-      if (busy || loaded >= ids.length) return;
+      if (busy || loaded >= items.length) return;
       busy = true;
       moreBtn.disabled = true;
       status.textContent = I18N.t('artist.loadingMore');
 
-      var slice = ids.slice(loaded, loaded + PAGE_SIZE);
+      var slice = items.slice(loaded, loaded + PAGE_SIZE);
       loaded += slice.length;
 
       // Cards mount with a fixed-ratio thumbnail placeholder; titles stream in after.
-      var cards = slice.map(function (id) {
-        var card = videoCard(id, { channelId: ctx.channelId, channelTitle: ctx.channelTitle, channelAvatar: ctx.channelAvatar });
+      var cards = slice.map(function (it) {
+        var card = videoCard(it.videoId, {
+          title: it.title,
+          channelId: it.channelId,
+          channelTitle: it.channelTitle,
+          channelAvatar: it.channelAvatar,
+          genre: it.genre,
+          publishedAt: it.publishedAt,
+          duration: it.duration
+        });
         masonry.add(card);
         return card;
       });
 
-      Api.videoMetaBatch(slice, {
-        concurrency: 6,
-        onItem: function (meta, idx) { cards[idx].setTitleFromMeta(meta); }
-      }).then(function () {
+      var needMeta = [];
+      var needIdx = [];
+      slice.forEach(function (it, i) {
+        if (!it.title) {
+          needMeta.push(it.videoId);
+          needIdx.push(i);
+        }
+      });
+
+      function finishBatch() {
         busy = false;
-        if (loaded >= ids.length) {
-          status.textContent = I18N.t('artist.allLoaded', { n: I18N.formatNumber(ids.length) });
+        if (loaded >= items.length) {
+          status.textContent = I18N.t('artist.allLoaded', { n: I18N.formatNumber(items.length) });
           moreBtn.remove();
           if (io) io.disconnect();
         } else {
-          status.textContent = I18N.formatNumber(loaded) + ' / ' + I18N.formatNumber(ids.length);
+          status.textContent = I18N.formatNumber(loaded) + ' / ' + I18N.formatNumber(items.length);
           moreBtn.disabled = false;
           fillViewport();
         }
-      });
+      }
+
+      if (!needMeta.length) {
+        finishBatch();
+        return;
+      }
+
+      Api.videoMetaBatch(needMeta, {
+        concurrency: 6,
+        onItem: function (meta, idx) { cards[needIdx[idx]].setTitleFromMeta(meta); }
+      }).then(finishBatch);
     }
 
     /* If the batch was too short to make the page scrollable, the observer will
      * never fire again — top up until the sentinel is pushed below the fold. */
     function fillViewport() {
       global.requestAnimationFrame(function () {
-        if (busy || loaded >= ids.length || !sentinel.isConnected) return;
+        if (busy || loaded >= items.length || !sentinel.isConnected) return;
         var rect = sentinel.getBoundingClientRect();
         if (rect.top <= (global.innerHeight || 0) + 120) loadNext();
       });
@@ -585,32 +672,36 @@
     ]);
     render(wrap);
 
-    Promise.all([Api.genres(), Api.latest()]).then(function (res) {
-      var genreMap = res[0], latest = res[1];
-      var counts = {};
-      latest.channels.forEach(function (c) {
-        var g = c.latestVideo && c.latestVideo.genre;
-        if (g) counts[g] = (counts[g] || 0) + 1;
-      });
-      var grid = wrap.querySelector('#genre-grid');
-      clear(grid);
-      var keys = [];
-      var seen = Object.create(null);
-      Object.keys(Genres.table).forEach(function (key) {
-        seen[key] = true;
-        keys.push(key);
-      });
-      Object.keys(genreMap).forEach(function (key) {
-        if (!seen[key]) keys.push(key);
-      });
-      keys.forEach(function (key) {
-        var n = counts[key] || 0;
-        grid.appendChild(h('a', { class: 'card genre-card' + (n ? '' : ' empty'), href: '#/genre/' + Genres.slug(key) }, [
-          h('span', { class: 'genre-icon', 'aria-hidden': 'true', text: Genres.icon(key) }),
-          h('strong', { text: Genres.label(key) }),
-          h('span', { class: 'muted small', text: Genres.description(key) }),
-          h('span', { class: 'badge subtle', text: n ? I18N.t('artist.count', { n: I18N.formatNumber(n) }) : I18N.t('genres.unused') })
-        ]));
+    Promise.all([Api.genres(), Api.channels()]).then(function (res) {
+      var genreMap = res[0], channels = res[1];
+      return loadCatalogues(channels).then(function (cats) {
+        var counts = {};
+        cats.forEach(function (cat) {
+          cat.works.forEach(function (w) {
+            if (w.genre) counts[w.genre] = (counts[w.genre] || 0) + 1;
+          });
+        });
+        var grid = wrap.querySelector('#genre-grid');
+        if (!grid || !grid.isConnected) return;
+        clear(grid);
+        var keys = [];
+        var seen = Object.create(null);
+        Object.keys(Genres.table).forEach(function (key) {
+          seen[key] = true;
+          keys.push(key);
+        });
+        Object.keys(genreMap).forEach(function (key) {
+          if (!seen[key]) keys.push(key);
+        });
+        keys.forEach(function (key) {
+          var n = counts[key] || 0;
+          grid.appendChild(h('a', { class: 'card genre-card' + (n ? '' : ' empty'), href: '#/genre/' + Genres.slug(key) }, [
+            h('span', { class: 'genre-icon', 'aria-hidden': 'true', text: Genres.icon(key) }),
+            h('strong', { text: Genres.label(key) }),
+            h('span', { class: 'muted small', text: Genres.description(key) }),
+            h('span', { class: 'badge subtle', text: n ? I18N.t('artist.count', { n: I18N.formatNumber(n) }) : I18N.t('genres.unused') })
+          ]));
+        });
       });
     }).catch(function () { render(errorBox(function () { route(true); })); });
   }
@@ -626,21 +717,39 @@
       ]),
       entry ? h('p', { class: 'lede', text: Genres.description(entry.key) }) : null
     ]);
-    var grid = h('div', { class: 'grid video-grid' }, [spinner()]);
-    append(wrap, [head, h('section', { class: 'block' }, [grid])]);
+    var host = h('section', { class: 'block' }, [spinner()]);
+    append(wrap, [head, host]);
     render(wrap);
 
-    Promise.all([Api.latest(), Api.channels()]).then(function (res) {
-      var chIndex = indexChannels(res[1]);
-      clear(grid);
-      var matches = liveFeed(res[0]).filter(function (c) {
-        return entry && c.latestVideo.genre === entry.key;
+    Api.channels().then(function (channels) {
+      var chIndex = indexChannels(channels);
+      return loadCatalogues(channels).then(function (cats) {
+        if (!host.isConnected) return;
+        var items = [];
+        var seen = Object.create(null);
+        cats.forEach(function (cat) {
+          var known = chIndex[cat.channelId];
+          cat.works.forEach(function (w) {
+            if (!entry || w.genre !== entry.key || seen[w.videoId]) return;
+            seen[w.videoId] = true;
+            items.push({
+              videoId: w.videoId,
+              title: w.title,
+              channelId: cat.channelId,
+              channelTitle: (known && known.name) || cat.channelTitle,
+              channelAvatar: known && known.avatarUrl,
+              genre: w.genre
+            });
+          });
+        });
+        clear(host);
+        if (!items.length) {
+          host.appendChild(h('p', { class: 'muted', text: I18N.t('genres.unused') }));
+          return;
+        }
+        head.appendChild(h('p', { class: 'muted', text: I18N.t('artist.count', { n: I18N.formatNumber(items.length) }) }));
+        mountWorkGrid(host, items);
       });
-      if (!matches.length) {
-        grid.appendChild(h('p', { class: 'muted', text: I18N.t('genres.unused') }));
-        return;
-      }
-      matches.forEach(function (c) { grid.appendChild(feedCard(c, chIndex, false)); });
     }).catch(function () { render(errorBox(function () { route(true); })); });
   }
 
@@ -652,7 +761,7 @@
       var data = res[0], channels = res[1];
       var known = channels.filter(function (c) { return c.id === channelId; })[0];
       var name = (known && known.name) || data.channelTitle || channelId;
-      var ids = data.allVideoIds || [];
+      var works = Api.parseWorks(data.allVideoIds);
       var latestVideo = data.latestVideo;
 
       clear(wrap);
@@ -660,7 +769,7 @@
       var bio = latestVideo
         ? I18N.t('artist.bio', {
             name: name,
-            count: I18N.formatNumber(ids.length),
+            count: I18N.formatNumber(works.length),
             genre: Genres.label(latestVideo.genre),
             title: latestVideo.title,
             date: I18N.formatDate(latestVideo.publishedAt)
@@ -675,7 +784,7 @@
             h('div', {}, [
               h('h1', { text: name }),
               h('p', { class: 'artist-tags' }, [
-                h('span', { class: 'badge subtle', text: I18N.t('artist.count', { n: I18N.formatNumber(ids.length) }) }),
+                h('span', { class: 'badge subtle', text: I18N.t('artist.count', { n: I18N.formatNumber(works.length) }) }),
                 latestVideo ? genreBadge(latestVideo.genre) : null,
                 data.lastUpdated ? h('span', { class: 'muted small', text: I18N.t('footer.updated', { date: I18N.formatDate(data.lastUpdated) }) }) : null
               ]),
@@ -718,7 +827,7 @@
         ])
       ]);
       wrap.appendChild(worksSec);
-      mountWorkGrid(worksSec, ids, {
+      mountWorkGrid(worksSec, works, {
         channelId: channelId,
         channelTitle: name,
         channelAvatar: known && known.avatarUrl

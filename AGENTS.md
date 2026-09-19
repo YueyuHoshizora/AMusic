@@ -14,7 +14,7 @@
 4. **Hash 路由。** 所有頁面走 `#/...`，不得改成 History API：靜態託管沒有 rewrite 規則。
 5. **顏色不寫死。** 只能用 `css/style.css` 頂端宣告的 CSS 變數；新增色票要同時補 `[data-theme="dark"]` 與 `[data-theme="light"]` 兩套。
 6. **UI 字串不寫死。** 任何使用者看得到的文字都必須經 `I18N.t()` 或 `data-i18n*`，且 zh／en／ja 三個字典同時補齊。
-7. **歷史作品不得一次載入。** 上游只提供 videoId，標題必須維持延遲、分批解析（見下）。
+7. **歷史作品不得一次載入全部卡片。** `data/<channelId>.json` 的 `allVideoIds` 現在是 `{videoId,title,genre}`（舊版可能仍是字串 ID）；卡片仍分批上架。標題以 JSON 為準，缺 title 才走 oEmbed。
 8. **授權標頭不得移除。** 專案採 AGPL-3.0-or-later（`LICENSE`）。`index.html`、`css/style.css`、`js/*.js` 每個檔案第一段都有 `SPDX-License-Identifier: AGPL-3.0-or-later`，新增檔案要跟著加；footer 的「原始碼」連結是 AGPL 第 13 條的義務，不得刪除。引入外部程式碼前先確認授權相容（GPL/AGPL 相容才行）。
 
 ## 檔案分工
@@ -53,7 +53,7 @@
 
 - 無萬用字元：NFKC 正規化後的不分大小寫子字串比對。
 - `*` = 任意長度、`?` = 單一字元，且是**未錨定**（「包含」）語意——`可*` 要能命中 `COYA可夜`。不要改回錨定全字串比對。
-- 歌曲搜尋需掃描全曲庫：先吃 localStorage 快取（零請求），未命中的才併發 6 條抓 oEmbed，並可 `abort()`。
+- 歌曲搜尋需掃描全曲庫：先吃 JSON 內建標題，再吃 localStorage 快取（零請求），未命中的才併發 6 條抓 oEmbed，並可 `abort()`。
 
 ## 驗證方式（改完一定要做）
 

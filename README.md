@@ -44,14 +44,14 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 | `channels.json` | 音樂人名冊（權威來源：顯示名稱與頭像皆以此為準） | `id`、`name`、`avatarUrl` |
 | `latest-videos.json` | 各頻道最新一首作品 | `updatedAt`、`channels[].channelId`、`latestVideo.{videoId,title,thumbnail,durationSeconds,publishedAt,genre}` |
 | `genres.json` | 曲風分類定義（鍵值即曲風原始字串） | 全部鍵值 |
-| `data/<channelId>.json` | 該音樂人的完整作品 ID 列表 | `allVideoIds`、`latestVideo`、`lastUpdated` |
+| `data/<channelId>.json` | 該音樂人的完整作品列表 | `allVideoIds[]{videoId,title,genre}`、`latestVideo`、`lastUpdated` |
 
 資料是上游即時抓取的結果，因此本站對兩種情況做了防禦：
 
 - `latestVideo` 可能為 `null`（頻道剛被追蹤、還沒索引到第一首作品）。這類資料列在 `liveFeed()` 一律濾除，不會進入任何畫面。
 - `latest-videos.json` 的 `channelTitle` 在未索引時等於頻道 ID，顯示名稱與頭像因此一律以 `channels.json` 為準（`indexChannels()`）。
 
-歷史作品只有 ID，單曲標題於需要時才向 YouTube oEmbed 取得（失敗時退回 noembed），結果寫入 `localStorage`（key `amusic:vcache:v1`，14 天 TTL），因此二次瀏覽與再次搜尋幾乎不再發送請求。
+歷史作品的標題與曲風已寫在 `allVideoIds` 裡；缺 title 時才向 YouTube oEmbed 取得（失敗時退回 noembed），結果寫入 `localStorage`（key `amusic:vcache:v1`，14 天 TTL）。卡片仍分批上架，不會一次渲染整份曲庫。
 
 音樂人頭像直接使用 `avatarUrl`（YouTube 圖片 CDN，`loading="lazy"` + `referrerpolicy="no-referrer"`）；載入失敗時自動退回姓名首字的漸層圓形佔位。
 

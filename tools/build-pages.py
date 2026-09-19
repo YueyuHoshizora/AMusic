@@ -198,6 +198,11 @@ def shell(template, path, title, desc, noindex=False, indexable=True):
         block + '\n',
         'canonical block',
     )
+    if not indexable:
+        # No ads on the error page: nothing to monetise and AdSense dislikes
+        # serving into 404 responses.
+        out = sub_once(out, r'\n<script async src="https://pagead2\.googlesyndication\.com[^>]*></script>',
+                       '', 'adsense')
     return out
 
 

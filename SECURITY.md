@@ -68,6 +68,7 @@ Please do not report these as new issues unless you have a way to escalate them:
 | Compromised TrackRadar repo can supply arbitrary titles and YouTube IDs | Titles render as text; iframes are restricted by CSP `frame-src` to youtube-nocookie. |
 | Fallback oEmbed via `noembed.com` sees the queried `videoId` | Used only if YouTube oEmbed fails; payload is the video id, no personal data. |
 | CSP `style-src 'unsafe-inline'` | Required for progress-bar width. Untrusted data is never written to `style`. |
+| AdSense telemetry (`sodar`/`adtrafficquality.google`) occasionally hits the CSP allowlist | Google only officially supports nonce-based strict CSP for AdSense, which a static GitHub Pages `<meta>` CSP cannot generate per-request; ad serving itself (`adsbygoogle.js`, `pagead2.googlesyndication.com`) is allow-listed and works, only ancillary telemetry beacons are occasionally blocked. |
 
 Engineering notes for people changing this code live in [`CLAUDE.md`](./CLAUDE.md).
 

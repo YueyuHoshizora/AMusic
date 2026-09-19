@@ -206,21 +206,23 @@
   // start one. No iframe_api script is loaded; this is the bare postMessage
   // protocol the embedded player already answers to once enablejsapi=1 is
   // in the URL.
+  var YT_ORIGIN = 'https://www.youtube-nocookie.com';
+
   function unmuteWhenReady(frame, videoId) {
     var done = false;
     var onMessage = function (e) {
-      if (done || e.source !== frame.contentWindow) return;
+      if (done || e.source !== frame.contentWindow || e.origin !== YT_ORIGIN) return;
       var data;
       try { data = JSON.parse(e.data); } catch (err) { return; }
       if (data.event !== 'onReady' && data.event !== 'infoDelivery') return;
       done = true;
-      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*');
-      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), '*');
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: [] }), YT_ORIGIN);
+      frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }), YT_ORIGIN);
     };
     frame.addEventListener('load', function () {
       // Some embeds only start broadcasting state once they see a listener
       // announce itself.
-      if (frame.contentWindow) frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: videoId }), '*');
+      if (frame.contentWindow) frame.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: videoId }), YT_ORIGIN);
     });
     return onMessage;
   }

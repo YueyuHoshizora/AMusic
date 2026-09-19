@@ -15,8 +15,48 @@
     return str.toLowerCase();
   }
 
-  function escapeRegex(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  /* Linear unanchored wildcard matcher (O(N * M)) to prevent catastrophic
+   * backtracking / ReDoS from arbitrary wildcard queries. */
+  function matchWildcardSubstring(pattern, text) {
+    if (!pattern) return { start: 0, length: 0 };
+    var pLen = pattern.length;
+    var tLen = text.length;
+
+    for (var s = 0; s <= tLen; s++) {
+      var p = 0;
+      var t = s;
+      var starIdx = -1;
+      var matchIdx = -1;
+
+      while (t < tLen) {
+        if (p === pLen) break;
+        if (p < pLen && (pattern.charAt(p) === '?' || pattern.charAt(p) === text.charAt(t))) {
+          p++;
+          t++;
+        } else if (p < pLen && pattern.charAt(p) === '*') {
+          starIdx = p;
+          matchIdx = t;
+          p++;
+        } else if (starIdx !== -1) {
+          p = starIdx + 1;
+          matchIdx++;
+          t = matchIdx;
+        } else {
+          break;
+        }
+      }
+
+      while (p < pLen && pattern.charAt(p) === '*') p++;
+
+      if (p === pLen) return { start: s, length: t - s };
+
+      if (pattern.charAt(0) !== '*' && pattern.charAt(0) !== '?') {
+        var nextS = text.indexOf(pattern.charAt(0), s + 1);
+        if (nextS === -1) break;
+        s = nextS - 1;
+      }
+    }
+    return null;
   }
 
   /* Compile a query into { test(text), find(text), wildcard, raw }.
@@ -25,8 +65,23 @@
    * string length, so slices can never land mid-character.
    */
   function compile(query) {
-    var raw = String(query || '').trim();
+    var raw = String(query || '').slice(0, 50).trim();
     var norm = normalize(raw);
+
+    // Collapse consecutive '*' and limit wildcards to prevent DoS
+    norm = norm.replace(/\*+/g, '*');
+    var wildcards = 0;
+    var limited = '';
+    for (var i = 0; i < norm.length; i++) {
+      var c = norm.charAt(i);
+      if (c === '*' || c === '?') {
+        wildcards++;
+        if (wildcards <= 6) limited += c;
+      } else {
+        limited += c;
+      }
+    }
+    norm = limited;
     var wildcard = /[*?]/.test(norm);
 
     if (!norm) {
@@ -34,20 +89,15 @@
     }
 
     if (wildcard) {
-      var body = norm.split('').map(function (ch) {
-        if (ch === '*') return '[\\s\\S]*?';
-        if (ch === '?') return '[\\s\\S]';
-        return escapeRegex(ch);
-      }).join('');
-      var re = new RegExp(body, 'u');
       return {
         raw: raw, wildcard: true, empty: false,
-        test: function (text) { return re.test(normalize(text)); },
+        test: function (text) {
+          return matchWildcardSubstring(norm, normalize(text)) !== null;
+        },
         find: function (text) {
           var n = normalize(text);
           if (n.length !== String(text).length) return null;
-          var m = re.exec(n);
-          return m ? { start: m.index, length: m[0].length } : null;
+          return matchWildcardSubstring(norm, n);
         }
       };
     }

@@ -42,6 +42,7 @@ OWNED_DIRS = ['latest', 'artists', 'genres', 'genre', 'artist', 'search']
 YT_THUMB = 'https://i.ytimg.com/vi/%s/hqdefault.jpg'
 YT_EMBED = 'https://www.youtube-nocookie.com/embed/%s'
 VIDEO_ID = re.compile(r'^[A-Za-z0-9_-]{11}$')
+CHANNEL_ID = re.compile(r'^[A-Za-z0-9_-]{6,64}$')
 VIDEO_TITLE_MAX = 100          # Google truncates past this; do it ourselves
 
 # Upstream fingerprint, so the five-minute schedule can bail out cheaply.
@@ -215,7 +216,8 @@ def main():
     updated_at = str(latest.get('updatedAt') or '')
     if not updated_at:
         sys.exit('upstream latest-videos.json has no updatedAt')
-    channels = fetch_json('channels.json')
+    raw_channels = fetch_json('channels.json')
+    channels = [ch for ch in raw_channels if isinstance(ch, dict) and CHANNEL_ID.match(str(ch.get('id') or ''))]
     roster = ','.join(sorted(str(ch.get('id') or '') for ch in channels))
     stamp = updated_at + ' ' + hashlib.sha256(roster.encode('utf-8')).hexdigest()[:16]
     if '--if-changed' in sys.argv[1:]:

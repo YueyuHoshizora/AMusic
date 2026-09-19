@@ -218,7 +218,8 @@ body.nav-open .header-tools { display: flex; }
 
 /* ---------------- chips & badges ---------------- */
 
-.chip-row { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .25rem; scrollbar-width: thin; }
+.chip-row { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .25rem; scrollbar-width: none; -ms-overflow-style: none; }
+.chip-row::-webkit-scrollbar { display: none; height: 0; }
 .chip {
   flex: 0 0 auto; padding: .4rem .9rem; border-radius: 999px; font-size: .85rem;
   background: var(--surface); border: 1px solid var(--line); color: var(--muted); white-space: nowrap;

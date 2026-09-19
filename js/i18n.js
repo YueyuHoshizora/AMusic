@@ -1,0 +1,377 @@
+/* A-Music · i18n core
+ * Locales: zh (繁體中文) / en (English) / ja (日本語)
+ * Everything user-visible goes through I18N.t(key, vars).
+ */
+(function (global) {
+  'use strict';
+
+  var STORAGE_KEY = 'amusic:lang';
+  var DEFAULT_LANG = 'zh';
+
+  var META = {
+    zh: { label: '中文', htmlLang: 'zh-Hant', intl: 'zh-Hant-TW' },
+    en: { label: 'EN', htmlLang: 'en', intl: 'en' },
+    ja: { label: '日本語', htmlLang: 'ja', intl: 'ja' }
+  };
+
+  var DICT = {
+    zh: {
+      'site.name': '聽見音樂',
+      'site.title': '聽見音樂 A-Music｜獨立音樂人作品推廣',
+      'site.tagline': '聽見每一首值得被聽見的作品',
+      'a11y.skip': '跳至主要內容',
+
+      'nav.home': '首頁',
+      'nav.artists': '音樂人',
+      'nav.genres': '曲風',
+      'nav.menu': '開啟選單',
+      'theme.label': '佈景主題',
+      'theme.light': '亮色佈景',
+      'theme.dark': '暗色佈景',
+      'lang.label': '切換語言',
+
+      'search.placeholder': '搜尋藝人或歌曲，支援 * 與 ?',
+      'search.label': '搜尋藝人或歌曲',
+      'search.submit': '開始搜尋',
+      'search.hint': '萬用字元：<code>*</code> 代表任意字串、<code>?</code> 代表單一字元。例如 <code>星*</code>、<code>?ove</code>。',
+      'search.title': '「{q}」的搜尋結果',
+      'search.artists': '音樂人',
+      'search.songs': '歌曲',
+      'search.empty': '找不到符合「{q}」的結果。',
+      'search.emptyHint': '試試較短的關鍵字，或加上萬用字元，例如 {example}。',
+      'search.scanning': '正在深度掃描全部曲目… {done}/{total}',
+      'search.scanDone': '已掃描 {total} 首歌曲（結果已快取，下次搜尋更快）。',
+      'search.stop': '停止掃描',
+      'search.resultCount': '共 {n} 筆結果',
+      'search.shown': '已顯示 {shown} / {n} 筆結果',
+
+      'home.hero.title': '聽見音樂 A-Music',
+      'home.hero.desc': '彙整並推廣華語獨立音樂人的 YouTube 作品，依曲風探索，隨時發現新聲音。',
+      'home.hero.cta': '探索音樂人',
+      'home.latest': '最新音樂',
+      'home.latest.desc': '各音樂人最新發表的作品',
+      'home.artists': '合作音樂人',
+      'home.artists.desc': '點擊進入音樂人簡介頁，瀏覽全部作品',
+      'home.genres': '曲風分類',
+      'home.genres.desc': '依照曲風探索作品',
+      'home.viewAll': '查看全部',
+      'home.stats.artists': '位音樂人',
+      'home.stats.tracks': '首作品',
+      'home.stats.genres': '種曲風',
+
+      'genre.all': '全部曲風',
+      'genres.title': '曲風分類',
+      'genres.desc': '以下曲風標籤由 TrackRadar 自動判別，點擊可篩選最新作品。',
+      'genres.unused': '目前尚無作品',
+
+      'artists.title': '音樂人',
+      'artists.desc': '所有已收錄的音樂人',
+      'artist.works': '全部作品',
+      'artist.worksDesc': '滾動即自動載入更多，每次載入 {n} 首',
+      'artist.latest': '最新作品',
+      'artist.about': '音樂人簡介',
+      'artist.bio': '{name} 目前在 A-Music 收錄了 {count} 部作品，主要曲風為「{genre}」。最新作品《{title}》發表於 {date}。',
+      'artist.bioNoVideo': '{name} 目前尚未有可顯示的作品。',
+      'artist.channel': '前往 YouTube 頻道',
+      'artist.count': '{n} 首作品',
+      'artist.loadMore': '載入更多',
+      'artist.loadingMore': '載入中…',
+      'artist.allLoaded': '已載入全部 {n} 首作品',
+      'artist.back': '返回',
+      'artist.notFound': '找不到這位音樂人',
+
+      'video.watch': '在 YouTube 觀看',
+      'video.unavailable': '此影片目前無法取得資訊',
+      'video.published': '發表於 {date}',
+
+      'common.loading': '載入中…',
+      'common.error': '資料載入失敗，請稍後再試。',
+      'common.retry': '重新載入',
+      'common.backHome': '回到首頁',
+      'common.duration': '片長',
+
+      'footer.note': '本站僅彙整與推廣公開的 YouTube 作品，所有版權歸原創作者所有。',
+      'footer.source': '資料來源',
+      'footer.updated': '資料更新於 {date}',
+
+      'notfound.title': '找不到頁面',
+      'notfound.desc': '這個網址不存在，或作品已被移除。'
+    },
+
+    en: {
+      'site.name': 'A-Music',
+      'site.title': 'A-Music｜Independent Artist Showcase',
+      'site.tagline': 'Hear every track worth hearing',
+      'a11y.skip': 'Skip to main content',
+
+      'nav.home': 'Home',
+      'nav.artists': 'Artists',
+      'nav.genres': 'Genres',
+      'nav.menu': 'Open menu',
+      'lang.label': 'Switch language',
+
+      'theme.label': 'Theme',
+      'theme.light': 'Light theme',
+      'theme.dark': 'Dark theme',
+      'search.placeholder': 'Search artists or songs — * and ? supported',
+      'search.label': 'Search artists or songs',
+      'search.submit': 'Search',
+      'search.hint': 'Wildcards: <code>*</code> matches any text, <code>?</code> matches one character. e.g. <code>love*</code>, <code>?ight</code>.',
+      'search.title': 'Results for “{q}”',
+      'search.artists': 'Artists',
+      'search.songs': 'Songs',
+      'search.empty': 'No results for “{q}”.',
+      'search.emptyHint': 'Try a shorter keyword or add a wildcard, e.g. {example}.',
+      'search.scanning': 'Deep-scanning the full catalogue… {done}/{total}',
+      'search.scanDone': 'Scanned {total} tracks (cached — next search is instant).',
+      'search.stop': 'Stop scanning',
+      'search.resultCount': '{n} results',
+      'search.shown': 'Showing {shown} of {n} results',
+
+      'home.hero.title': 'A-Music · 聽見音樂',
+      'home.hero.desc': 'A curated showcase of independent artists on YouTube. Browse by genre and discover new sounds.',
+      'home.hero.cta': 'Explore artists',
+      'home.latest': 'Latest releases',
+      'home.latest.desc': 'The newest upload from every artist',
+      'home.artists': 'Featured artists',
+      'home.artists.desc': 'Open an artist page to browse their full catalogue',
+      'home.genres': 'Genres',
+      'home.genres.desc': 'Explore music by genre',
+      'home.viewAll': 'View all',
+      'home.stats.artists': 'artists',
+      'home.stats.tracks': 'tracks',
+      'home.stats.genres': 'genres',
+
+      'genre.all': 'All genres',
+      'genres.title': 'Genres',
+      'genres.desc': 'Genre tags are classified automatically by TrackRadar. Tap one to filter the latest releases.',
+      'genres.unused': 'No releases yet',
+
+      'artists.title': 'Artists',
+      'artists.desc': 'Every artist featured on A-Music',
+      'artist.works': 'All works',
+      'artist.worksDesc': 'Scroll to load more — {n} tracks per batch',
+      'artist.latest': 'Latest release',
+      'artist.about': 'About the artist',
+      'artist.bio': '{name} has {count} works on A-Music, mainly in the “{genre}” genre. The latest release “{title}” came out on {date}.',
+      'artist.bioNoVideo': '{name} has no published works available right now.',
+      'artist.channel': 'Open YouTube channel',
+      'artist.count': '{n} tracks',
+      'artist.loadMore': 'Load more',
+      'artist.loadingMore': 'Loading…',
+      'artist.allLoaded': 'All {n} tracks loaded',
+      'artist.back': 'Back',
+      'artist.notFound': 'Artist not found',
+
+      'video.watch': 'Watch on YouTube',
+      'video.unavailable': 'Details unavailable for this video',
+      'video.published': 'Published {date}',
+
+      'common.loading': 'Loading…',
+      'common.error': 'Failed to load data. Please try again later.',
+      'common.retry': 'Retry',
+      'common.backHome': 'Back to home',
+      'common.duration': 'Duration',
+
+      'footer.note': 'A-Music only aggregates and promotes publicly available YouTube works. All rights belong to their creators.',
+      'footer.source': 'Data source',
+      'footer.updated': 'Data updated {date}',
+
+      'notfound.title': 'Page not found',
+      'notfound.desc': 'This address does not exist, or the content has been removed.'
+    },
+
+    ja: {
+      'site.name': 'A-Music',
+      'site.title': 'A-Music｜インディーアーティスト作品ガイド',
+      'site.tagline': '聴かれるべき一曲を、あなたに',
+      'a11y.skip': 'メインコンテンツへスキップ',
+
+      'nav.home': 'ホーム',
+      'nav.artists': 'アーティスト',
+      'nav.genres': 'ジャンル',
+      'nav.menu': 'メニューを開く',
+      'lang.label': '言語切り替え',
+
+      'search.placeholder': 'アーティスト・楽曲を検索（* と ? が使えます）',
+      'search.label': 'アーティスト・楽曲を検索',
+      'theme.label': 'テーマ',
+      'theme.light': 'ライトテーマ',
+      'theme.dark': 'ダークテーマ',
+      'search.submit': '検索',
+      'search.hint': 'ワイルドカード：<code>*</code> は任意の文字列、<code>?</code> は1文字。例：<code>星*</code>、<code>?ove</code>。',
+      'search.title': '「{q}」の検索結果',
+      'search.artists': 'アーティスト',
+      'search.songs': '楽曲',
+      'search.empty': '「{q}」に一致する結果はありません。',
+      'search.emptyHint': 'キーワードを短くするか、{example} のようにワイルドカードをお試しください。',
+      'search.scanning': '全楽曲をディープスキャン中… {done}/{total}',
+      'search.scanDone': '{total} 曲をスキャンしました（キャッシュ済み・次回は高速）。',
+      'search.stop': 'スキャンを停止',
+      'search.resultCount': '全 {n} 件',
+      'search.shown': '{n} 件中 {shown} 件を表示',
+
+      'home.hero.title': 'A-Music・聴見音楽',
+      'home.hero.desc': '華語圏のインディーアーティストによる YouTube 作品を集めて紹介。ジャンルから新しい音に出会えます。',
+      'home.hero.cta': 'アーティストを見る',
+      'home.latest': '最新リリース',
+      'home.latest.desc': '各アーティストの最新作',
+      'home.artists': '参加アーティスト',
+      'home.artists.desc': 'アーティストページで全作品を閲覧できます',
+      'home.genres': 'ジャンル',
+      'home.genres.desc': 'ジャンルから作品を探す',
+      'home.viewAll': 'すべて見る',
+      'home.stats.artists': 'アーティスト',
+      'home.stats.tracks': '作品',
+      'home.stats.genres': 'ジャンル',
+
+      'genre.all': 'すべてのジャンル',
+      'genres.title': 'ジャンル一覧',
+      'genres.desc': 'ジャンルタグは TrackRadar により自動判定されています。タップすると最新作を絞り込めます。',
+      'genres.unused': '作品はまだありません',
+
+      'artists.title': 'アーティスト',
+      'artists.desc': 'A-Music に収録されている全アーティスト',
+      'artist.works': '全作品',
+      'artist.worksDesc': 'スクロールで自動読み込み（{n} 件ずつ）',
+      'artist.latest': '最新作',
+      'artist.about': 'アーティスト紹介',
+      'artist.bio': '{name} は A-Music に {count} 作品を収録しており、主なジャンルは「{genre}」です。最新作「{title}」は {date} に公開されました。',
+      'artist.bioNoVideo': '{name} の公開作品は現在ありません。',
+      'artist.channel': 'YouTube チャンネルを開く',
+      'artist.count': '{n} 作品',
+      'artist.loadMore': 'もっと読み込む',
+      'artist.loadingMore': '読み込み中…',
+      'artist.allLoaded': '全 {n} 作品を読み込みました',
+      'artist.back': '戻る',
+      'artist.notFound': 'アーティストが見つかりません',
+
+      'video.watch': 'YouTube で見る',
+      'video.unavailable': 'この動画の情報は取得できません',
+      'video.published': '{date} 公開',
+
+      'common.loading': '読み込み中…',
+      'common.error': 'データの読み込みに失敗しました。しばらくしてからお試しください。',
+      'common.retry': '再読み込み',
+      'common.backHome': 'ホームへ戻る',
+      'common.duration': '再生時間',
+
+      'footer.note': '当サイトは公開されている YouTube 作品の紹介のみを行います。著作権はすべて原作者に帰属します。',
+      'footer.source': 'データ提供',
+      'footer.updated': 'データ更新日 {date}',
+
+      'notfound.title': 'ページが見つかりません',
+      'notfound.desc': 'この URL は存在しないか、コンテンツが削除されています。'
+    }
+  };
+
+  var listeners = [];
+  var current = DEFAULT_LANG;
+
+  function detect() {
+    var stored = null;
+    try { stored = global.localStorage.getItem(STORAGE_KEY); } catch (e) { /* private mode */ }
+    if (stored && DICT[stored]) return stored;
+    var navLangs = (global.navigator.languages || [global.navigator.language || '']).map(String);
+    for (var i = 0; i < navLangs.length; i++) {
+      var l = navLangs[i].toLowerCase();
+      if (l.indexOf('ja') === 0) return 'ja';
+      if (l.indexOf('zh') === 0) return 'zh';
+      if (l.indexOf('en') === 0) return 'en';
+    }
+    return DEFAULT_LANG;
+  }
+
+  function interpolate(str, vars) {
+    if (!vars) return str;
+    return str.replace(/\{(\w+)\}/g, function (m, k) {
+      return Object.prototype.hasOwnProperty.call(vars, k) ? String(vars[k]) : m;
+    });
+  }
+
+  var I18N = {
+    languages: ['zh', 'en', 'ja'],
+    meta: META,
+
+    get lang() { return current; },
+
+    t: function (key, vars) {
+      var table = DICT[current] || DICT[DEFAULT_LANG];
+      var val = table[key];
+      if (val == null) val = DICT[DEFAULT_LANG][key];
+      if (val == null) return key;
+      return interpolate(val, vars);
+    },
+
+    has: function (key) { return !!DICT[current][key]; },
+
+    intlLocale: function () { return META[current].intl; },
+
+    setLang: function (lang) {
+      if (!DICT[lang] || lang === current) return;
+      current = lang;
+      try { global.localStorage.setItem(STORAGE_KEY, lang); } catch (e) { /* ignore */ }
+      document.documentElement.lang = META[lang].htmlLang;
+      I18N.applyStatic(document);
+      for (var i = 0; i < listeners.length; i++) listeners[i](lang);
+    },
+
+    onChange: function (fn) { listeners.push(fn); },
+
+    /* Translate declarative markup: data-i18n / data-i18n-ph / data-i18n-aria / data-i18n-html */
+    applyStatic: function (root) {
+      var scope = root || document;
+      each(scope.querySelectorAll('[data-i18n]'), function (el) {
+        el.textContent = I18N.t(el.getAttribute('data-i18n'));
+      });
+      each(scope.querySelectorAll('[data-i18n-html]'), function (el) {
+        el.innerHTML = I18N.t(el.getAttribute('data-i18n-html'));
+      });
+      each(scope.querySelectorAll('[data-i18n-ph]'), function (el) {
+        el.setAttribute('placeholder', I18N.t(el.getAttribute('data-i18n-ph')));
+      });
+      each(scope.querySelectorAll('[data-i18n-aria]'), function (el) {
+        el.setAttribute('aria-label', I18N.t(el.getAttribute('data-i18n-aria')));
+      });
+      if (scope === document) document.title = I18N.t('site.title');
+    },
+
+    /* ---- locale-aware formatters ---- */
+    formatDate: function (iso, withTime) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      var opts = { year: 'numeric', month: 'short', day: 'numeric' };
+      if (withTime) { opts.hour = '2-digit'; opts.minute = '2-digit'; }
+      try {
+        return new Intl.DateTimeFormat(I18N.intlLocale(), opts).format(d);
+      } catch (e) {
+        return d.toISOString().slice(0, 10);
+      }
+    },
+
+    formatNumber: function (n) {
+      try { return new Intl.NumberFormat(I18N.intlLocale()).format(n); }
+      catch (e) { return String(n); }
+    },
+
+    formatDuration: function (seconds) {
+      if (!seconds && seconds !== 0) return '';
+      var s = Math.max(0, Math.round(seconds));
+      var h = Math.floor(s / 3600);
+      var m = Math.floor((s % 3600) / 60);
+      var sec = s % 60;
+      var pad = function (v) { return v < 10 ? '0' + v : String(v); };
+      return h > 0 ? h + ':' + pad(m) + ':' + pad(sec) : m + ':' + pad(sec);
+    }
+  };
+
+  function each(nodeList, fn) {
+    Array.prototype.forEach.call(nodeList, fn);
+  }
+
+  current = detect();
+  document.documentElement.lang = META[current].htmlLang;
+
+  global.I18N = I18N;
+})(window);

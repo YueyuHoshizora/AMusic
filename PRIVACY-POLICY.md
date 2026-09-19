@@ -6,13 +6,15 @@ Operator: Yueyu Hoshizora (<yueyuhoshizora@gmail.com>)
 
 Traditional Chinese follows the English text.
 
-This is a **static website**. We do not run an application server, we do not create accounts, and we do not set cookies. Nothing you do on the site is sent to a backend we control.
+This is a **static website**. We do not run an application server and we do not create accounts. Nothing you do on the site is sent to a backend we control.
 
 ## What we do not collect
 
-We do not collect names, email addresses, payment details, location, advertising identifiers, or analytics. There is no login, no newsletter, no comment form, and no third-party analytics or advertising script.
+We do not collect names, email addresses, payment details, location, or advertising identifiers. There is no login, no newsletter, no comment form, and no advertising or analytics script of our own.
 
 The search box only changes the **URL hash** in your browser (`#/search?q=…`). Hash fragments are not sent to GitHub Pages as part of the request.
+
+A **Buy Me a Coffee** donation button is loaded on every page from their CDN. Clicking it opens their checkout iframe. Donations are processed by Buy Me a Coffee, not us. Their widget may set a first-party cookie named `visited` on this origin (used to hide a one-time tooltip). See [Buy Me a Coffee’s privacy policy](https://www.buymeacoffee.com/privacy-policy).
 
 ## What stays on your device
 
@@ -36,12 +38,14 @@ Opening a page causes the browser to fetch files from this site (HTML, CSS, JS, 
 | `raw.githubusercontent.com` (TrackRadar) | Channel list, latest videos, genres, per-artist video ids | Ordinary HTTPS request; no account token |
 | `i.ytimg.com`, `yt3.ggpht.com`, `*.googleusercontent.com` | Video thumbnails and channel avatars | Image request. Avatars are loaded with `referrerpolicy="no-referrer"` |
 | `www.youtube.com` (oEmbed) | Resolve a video title when it is not in the local cache | The YouTube watch URL of that video id |
+| `cdnjs.buymeacoffee.com`, `cdn.buymeacoffee.com` | Donation widget script, icon, and font | Loaded on every page |
+| `www.buymeacoffee.com`, `buymeacoffee.com` | Donation checkout iframe | **Only after you click the coffee button** |
 | `noembed.com` | Fallback only if YouTube oEmbed fails | The same watch URL (video id only) |
 | `www.youtube-nocookie.com` | In-page player, **only after you press play** | YouTube’s embed; subject to [Google’s privacy policy](https://policies.google.com/privacy) |
 
 Clicking “Watch on YouTube” opens `youtube.com` in a new tab (`rel="noopener"`).
 
-We do not receive those third-party logs. Their processing is governed by GitHub, Google / YouTube, and noembed respectively.
+We do not receive those third-party logs. Their processing is governed by GitHub, Google / YouTube, noembed, and Buy Me a Coffee respectively.
 
 Page-level referrer policy is `strict-origin-when-cross-origin`.
 
@@ -52,7 +56,7 @@ The site does not target children and does not knowingly collect personal data f
 ## Your choices
 
 - Change or clear language and theme from the header, or by deleting site data.
-- Do not press play if you do not want YouTube’s embed to load.
+- Do not press play if you do not want YouTube’s embed to load. Do not click the coffee button if you do not want Buy Me a Coffee’s checkout iframe to load.
 - Block `localStorage` or third-party requests in the browser; the catalogue may load more slowly or titles may stay unresolved.
 
 ## Changes
@@ -68,11 +72,13 @@ Security issues: see [SECURITY.md](./SECURITY.md)
 
 ## 我們不蒐集什麼
 
-這是**靜態網站**：沒有應用伺服器、沒有帳號、不寫 cookie。你在站上的操作不會送到我們控制的後端。
+這是**靜態網站**：沒有應用伺服器、沒有帳號。你在站上的操作不會送到我們控制的後端。
 
-我們不蒐集姓名、電子郵件、付款資料、位置、廣告識別碼，也沒有分析或廣告腳本。沒有登入、電子報或留言表單。
+我們不蒐集姓名、電子郵件、付款資料、位置、廣告識別碼。沒有登入、電子報或留言表單，也沒有我們自己的分析或廣告腳本。
 
 搜尋只改瀏覽器裡的 **URL hash**（`#/search?q=…`）。Hash 不會當作 GitHub Pages 請求的一部分送出。
+
+每一頁會從 CDN 載入 **Buy Me a Coffee** 贊助按鈕。點下去才會打開他們的結帳 iframe。贊助由 Buy Me a Coffee 處理，不是我們。該 widget 可能在本站 origin 寫入名為 `visited` 的第一方 cookie（用來隱藏一次性提示）。見 [Buy Me a Coffee 隱私權政策](https://www.buymeacoffee.com/privacy-policy)。
 
 ## 只留在你裝置上的資料
 
@@ -98,10 +104,12 @@ Security issues: see [SECURITY.md](./SECURITY.md)
 | `www.youtube.com`（oEmbed） | 本機快取沒有標題時，解析影片標題 | 該 video id 的 YouTube 觀看網址 |
 | `noembed.com` | 僅在 YouTube oEmbed 失敗時作為備援 | 同一個觀看網址（只有 video id） |
 | `www.youtube-nocookie.com` | 頁內播放器，**只有你按下播放之後**才載入 | YouTube 內嵌播放，適用 [Google 隱私權政策](https://policies.google.com/privacy) |
+| `cdnjs.buymeacoffee.com`、`cdn.buymeacoffee.com` | 贊助按鈕腳本、圖示、字型 | 每一頁都會載入 |
+| `www.buymeacoffee.com`、`buymeacoffee.com` | 贊助結帳 iframe | **只有你點下咖啡按鈕之後**才載入 |
 
 點「在 YouTube 觀看」會開新分頁到 `youtube.com`（`rel="noopener"`）。
 
-我們拿不到上述第三方的日誌。其處理分別受 GitHub、Google／YouTube、noembed 的政策拘束。
+我們拿不到上述第三方的日誌。其處理分別受 GitHub、Google／YouTube、noembed、Buy Me a Coffee 的政策拘束。
 
 頁面 Referrer 政策為 `strict-origin-when-cross-origin`。
 
@@ -112,7 +120,7 @@ Security issues: see [SECURITY.md](./SECURITY.md)
 ## 你可以怎麼做
 
 - 在頁首切換語言與主題，或刪除網站資料。
-- 若不想載入 YouTube 內嵌播放器，不要按播放。
+- 若不想載入 YouTube 內嵌播放器，不要按播放。若不想載入 Buy Me a Coffee 結帳 iframe，不要點咖啡按鈕。
 - 可在瀏覽器封鎖 `localStorage` 或第三方請求；目錄會變慢，標題可能無法解析。
 
 ## 變更

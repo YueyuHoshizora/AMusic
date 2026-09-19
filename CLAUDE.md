@@ -27,17 +27,18 @@
 4. **不用字串拼 selector。** 首頁作品數標註改用節點參照（`infoById`）。曾經是 `querySelector('[href="#/artist/' + ch.id + '"]')`——上游 id 只要含引號就能讓查詢壞掉或擴大命中。
 5. **CSP allow-list（`index.html` 的 `<meta http-equiv>`）。**
    ```
-   default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline';
-   img-src 'self' data: https://i.ytimg.com https://*.ytimg.com https://yt3.ggpht.com https://*.ggpht.com https://*.googleusercontent.com;
+   default-src 'none'; script-src 'self' https://cdnjs.buymeacoffee.com; style-src 'self' 'unsafe-inline';
+   img-src 'self' data: https://i.ytimg.com https://*.ytimg.com https://yt3.ggpht.com https://*.ggpht.com https://*.googleusercontent.com https://cdn.buymeacoffee.com;
+   font-src https://cdn.buymeacoffee.com;
    connect-src https://raw.githubusercontent.com https://www.youtube.com https://noembed.com;
-   frame-src https://www.youtube-nocookie.com; base-uri 'none'; form-action 'self'
+   frame-src https://www.youtube-nocookie.com https://www.buymeacoffee.com https://buymeacoffee.com; base-uri 'none'; form-action 'self'
    ```
-   - `script-src 'self'` → 不得引入任何 CDN script、analytics、inline `<script>`。
+   - `script-src` 只允許本站與 Buy Me a Coffee widget CDN（`cdnjs.buymeacoffee.com`）。不得再加 analytics 或 inline `<script>`。
    - `style-src` 的 `'unsafe-inline'` 是必要之惡：進度條寬度用 `element.style.width` 設定。
    - `frame-ancestors`／`X-Frame-Options` 在 `<meta>` 會被瀏覽器忽略，GitHub Pages 也無法設自訂 header，**因此點擊劫持防護目前缺席**（見殘餘風險）。
 6. **外連與 referrer。** 站外連結一律 `target="_blank" rel="noopener"`；頁面層 `referrer` 設 `strict-origin-when-cross-origin`；頭像 `<img referrerpolicy="no-referrer">`。
 7. **localStorage 衛生（`js/api.js`）。** 只存影片標題快取（`amusic:vcache:v1`）、語言（`amusic:lang`）、主題（`amusic:theme`），無任何機敏資料。讀取一律 `try/catch` + `JSON.parse` 防禦，14 天 TTL、上限 `CACHE_MAX = 4000` 筆（避免被塞爆配額）。
-8. **無第三方 JS、無 npm 依賴。** 供應鏈只剩「TrackRadar 資料」與「YouTube iframe」兩個外部信任點。
+8. **無 npm 依賴。** 第三方 JS 僅 Buy Me a Coffee widget（`index.html` 末端）。供應鏈另有 TrackRadar 資料與 YouTube iframe。
 
 ## 掃描清單
 
@@ -100,14 +101,14 @@ CSP 生效驗證：載入首頁與任一藝人頁，console 不得出現 `Refuse
 | 無 `frame-ancestors` / `X-Frame-Options` | 站台可被他站 iframe 內嵌（點擊劫持） | 靜態站無登入、無狀態改變操作，可被劫持的動作只有「點連結」；GitHub Pages 無法設自訂 header，要修得換 Cloudflare Pages 之類可設 header 的託管 |
 | `noembed.com` 為次要 oEmbed 來源 | 該服務可看到訪客查詢的 videoId | 只在 YouTube oEmbed 失敗時觸發，送出內容僅 videoId，無個資 |
 | `style-src 'unsafe-inline'` | 允許 inline style | 進度條寬度需要；本站無使用者可控的 style 字串 |
-| localStorage 快取可被同源腳本讀取 | 可讀到曾瀏覽的影片標題 | 內容非機敏，且同源腳本只有本站自己（`script-src 'self'`） |
+| localStorage 快取可被同源腳本讀取 | 可讀到曾瀏覽的影片標題 | 內容非機敏；同源腳本為本站 JS 與 BMC widget |
 
 ## 明確禁止
 
-- 引入 CDN script、analytics、第三方字體或任何 npm 套件
+- 引入 analytics、第三方字體套件或任何 npm 套件（BMC widget 除外，見 CSP allow-list）
 - 放任何 token／API key／私密 URL 進 repo（本站不需要憑證）
 - 用 `innerHTML` 顯示上游或使用者輸入
-- 放寬或移除 CSP 來「讓功能動起來」——先確認該來源是否真的必要，必要才加入 allow-list
+- 放寬或移除 CSP 來「讓功能動起來」——先確認該來源是否真的必要，必要才加入 allow-list（BMC widget 已列入）
 - 為了通過驗證而用 `try/catch` 吞掉例外
 - 移除檔案頂端的 `SPDX-License-Identifier: AGPL-3.0-or-later`、`LICENSE`，或 footer 的「原始碼」連結（AGPL 第 13 條義務）
 - 貼入授權不明或與 AGPL-3.0 不相容的第三方程式碼（供應鏈與授權風險同等看待）

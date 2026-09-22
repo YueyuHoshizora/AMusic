@@ -47,6 +47,36 @@
 
 html { scroll-behavior: smooth; }
 
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.app,
+.view,
+.block,
+.grid,
+.card,
+.card-body,
+.artist-hero,
+.artist-hero-main,
+.artist-info,
+.section-head,
+.header-inner,
+.header-tools {
+  min-width: 0;
+}
+
+.card-title,
+.artist-name,
+.artist-hero h1,
+.lede,
+.muted {
+  overflow-wrap: anywhere;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -140,7 +170,7 @@ body.nav-open .header-tools { display: flex; }
 .search-form input {
   flex: 1 1 auto; min-width: 0; height: 40px;
   padding: .6rem .9rem; border-radius: var(--radius-sm);
-  background: var(--surface-2); border: 1px solid var(--line); color: var(--text); font: inherit; font-size: .95rem;
+  background: var(--surface-2); border: 1px solid var(--line); color: var(--text); font: inherit; font-size: 16px;
 }
 .search-form input::placeholder { color: var(--muted); }
 

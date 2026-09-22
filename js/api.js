@@ -209,16 +209,53 @@
     return Promise.all(runners).then(function () { return out; });
   }
 
+  /* channels.json owns overrides; data.forcedGenre is only upstream history. */
+  function forcedGenre(channel) {
+    var value = channel && channel.forcedGenre;
+    return typeof value === 'string' ? value.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 80) : '';
+  }
+
+  function applyGenre(data, genre) {
+    if (!genre) return data;
+    if (data.latestVideo) data.latestVideo.genre = genre;
+    if (Array.isArray(data.allVideoIds)) {
+      data.allVideoIds.forEach(function (item, i) {
+        if (typeof item === 'string') data.allVideoIds[i] = { videoId: item, genre: genre };
+        else if (item && typeof item === 'object') item.genre = genre;
+      });
+    }
+    return data;
+  }
+
   var Api = {
     base: BASE,
 
-    channels: function () { return getJSON(BASE + 'channels.json'); },
-    latest: function () { return getJSON(BASE + 'latest-videos.json'); },
+    channels: function () {
+      return getJSON(BASE + 'channels.json').then(function (channels) {
+        channels.forEach(function (ch) { ch.forcedGenre = forcedGenre(ch); });
+        return channels;
+      });
+    },
+    latest: function () {
+      return Promise.all([getJSON(BASE + 'latest-videos.json'), Api.channels()]).then(function (res) {
+        var overrides = Object.create(null);
+        res[1].forEach(function (ch) { overrides[ch.id] = ch.forcedGenre; });
+        (res[0].channels || []).forEach(function (ch) {
+          if (ch) applyGenre(ch, overrides[ch.channelId]);
+        });
+        return res[0];
+      });
+    },
     genres: function () { return getJSON(BASE + 'genres.json'); },
     artist: function (channelId) {
       var safe = safeChannelId(channelId);
       if (!safe) return Promise.reject(new Error('bad channel id'));
-      return getJSON(BASE + 'data/' + safe + '.json');
+      return Promise.all([getJSON(BASE + 'data/' + safe + '.json'), Api.channels()]).then(function (res) {
+        for (var i = 0; i < res[1].length; i++) {
+          if (res[1][i].id === safe) return applyGenre(res[0], res[1][i].forcedGenre);
+        }
+        return res[0];
+      });
     },
 
     videoMeta: videoMeta,

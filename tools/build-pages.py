@@ -117,7 +117,12 @@ def genre_entries(genres_src):
     return out
 
 
-def video_entries(channel, videos, meta, templates, seen):
+def forced_genre(channel):
+    value = channel.get('forcedGenre')
+    return re.sub(r'[\x00-\x1f]', '', value).strip()[:80] if isinstance(value, str) else ''
+
+
+def video_entries(channel, videos, meta, templates, seen, forced_genre=''):
     """One <video:video> per track of one artist, in upstream order.
 
     Titles and ids come from a scraped feed: ids are checked against the
@@ -134,7 +139,7 @@ def video_entries(channel, videos, meta, templates, seen):
         seen.add(vid)
         if len(title) > VIDEO_TITLE_MAX:
             title = title[:VIDEO_TITLE_MAX - 1].rstrip() + '\u2026'
-        genre = (item.get('genre') or '').strip()
+        genre = forced_genre or (item.get('genre') or '').strip()
         # Upstream leaves genre empty when its classifier is unsure; saying
         # "genre: —" would be worse than not mentioning it.
         desc = (templates[1] if not genre else templates[0]) \
@@ -210,15 +215,15 @@ def shell(template, path, title, desc, noindex=False, indexable=True):
 def main():
     # The scheduled job runs every five minutes; --if-changed lets it exit after
     # two requests when the upstream catalogue has not moved, instead of pulling
-    # every data/<channel>.json each time. The roster is part of the fingerprint
-    # on purpose: a new artist needs a new shell even if updatedAt never moved.
+    # every data/<channel>.json each time. Channel settings are fingerprinted too:
+    # changing a forced genre must rebuild even if updatedAt never moved.
     latest = fetch_json('latest-videos.json')
     updated_at = str(latest.get('updatedAt') or '')
     if not updated_at:
         sys.exit('upstream latest-videos.json has no updatedAt')
     raw_channels = fetch_json('channels.json')
     channels = [ch for ch in raw_channels if isinstance(ch, dict) and CHANNEL_ID.match(str(ch.get('id') or ''))]
-    roster = ','.join(sorted(str(ch.get('id') or '') for ch in channels))
+    roster = json.dumps(channels, sort_keys=True, ensure_ascii=False, separators=(',', ':'))
     stamp = updated_at + ' ' + hashlib.sha256(roster.encode('utf-8')).hexdigest()[:16]
     if '--if-changed' in sys.argv[1:]:
         try:
@@ -315,7 +320,7 @@ def main():
     seen, blocks = set(), []
     for ch in channels:
         videos = video_entries(ch.get('name') or ch['id'], catalogue.get(ch['id']) or [],
-                               newest, video_desc, seen)
+                               newest, video_desc, seen, forced_genre(ch))
         if not videos:
             continue
         blocks.append('<url><loc>%s/artist/%s/</loc>%s</url>'

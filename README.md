@@ -49,7 +49,7 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 
 | 檔案 | 用途 | 使用的欄位 |
 | --- | --- | --- |
-| `channels.json` | 音樂人名冊（權威來源：顯示名稱與頭像皆以此為準） | `id`、`name`、`avatarUrl` |
+| `channels.json` | 音樂人名冊（權威來源：顯示名稱、頭像與強制分類皆以此為準） | `id`、`name`、`avatarUrl`、`forcedGenre`（選填） |
 | `latest-videos.json` | 各頻道最新一首作品 | `updatedAt`、`channels[].channelId`、`latestVideo.{videoId,title,thumbnail,durationSeconds,publishedAt,genre}` |
 | `genres.json` | 曲風分類定義（鍵值即曲風原始字串） | 全部鍵值 |
 | `data/<channelId>.json` | 該音樂人的完整作品列表 | `allVideoIds[]{videoId,title,genre}`、`latestVideo`、`lastUpdated` |
@@ -60,6 +60,8 @@ https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
 - `latest-videos.json` 的 `channelTitle` 在未索引時等於頻道 ID，顯示名稱與頭像因此一律以 `channels.json` 為準（`indexChannels()`）。
 
 歷史作品的標題與曲風已寫在 `allVideoIds` 裡；缺 title 時才向 YouTube oEmbed 取得（失敗時退回 noembed），結果寫入 `localStorage`（key `amusic:vcache:v1`，14 天 TTL）。卡片仍分批上架，不會一次渲染整份曲庫。
+
+`channels.json` 的非空字串 `forcedGenre` 優先於單曲的 `genre`，統一套用首頁、最新作品、音樂人、曲風統計／篩選、搜尋與影片 sitemap；未設定時沿用原始分類。`data/<channelId>.json` 的同名欄位只是上游上次套用的紀錄，不當作目前設定。產生器的快篩指紋包含完整頻道設定，因此只改強制分類也會觸發重建。
 
 音樂人頭像直接使用 `avatarUrl`（YouTube 圖片 CDN，`loading="lazy"` + `referrerpolicy="no-referrer"`）；載入失敗時自動退回姓名首字的漸層圓形佔位。
 

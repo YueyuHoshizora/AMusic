@@ -308,6 +308,7 @@
   }
 
   function artistCard(ch, extra) {
+    var genre = ch.forcedGenre || (extra && extra.genre);
     return h('a', {
       class: 'card artist-card',
       href: Api.safeChannelId(ch.id) ? '/artist/' + ch.id + '/' : '/artists/'
@@ -316,9 +317,9 @@
       h('span', { class: 'artist-info' }, [
         h('strong', { class: 'artist-name' }, [extra && extra.matcher ? highlighted(ch.name, extra.matcher) : ch.name]),
         extra && extra.countText ? h('span', { class: 'muted small', text: extra.countText }) : null,
-        extra && extra.genre ? h('span', { class: 'badge genre-badge static' }, [
-          h('span', { class: 'badge-icon', 'aria-hidden': 'true', text: Genres.icon(extra.genre) }),
-          Genres.label(extra.genre)
+        genre ? h('span', { class: 'badge genre-badge static' }, [
+          h('span', { class: 'badge-icon', 'aria-hidden': 'true', text: Genres.icon(genre) }),
+          Genres.label(genre)
         ]) : null
       ])
     ]);
@@ -860,7 +861,7 @@
               h('h1', { text: name }),
               h('p', { class: 'artist-tags' }, [
                 h('span', { class: 'badge subtle', text: I18N.t('artist.count', { n: I18N.formatNumber(works.length) }) }),
-                latestVideo ? genreBadge(latestVideo.genre) : null,
+                genreBadge((known && known.forcedGenre) || (latestVideo && latestVideo.genre)),
                 data.lastUpdated ? h('span', { class: 'muted small', text: I18N.t('footer.updated', { date: I18N.formatDate(data.lastUpdated) }) }) : null
               ]),
               h('div', { class: 'artist-actions' }, [

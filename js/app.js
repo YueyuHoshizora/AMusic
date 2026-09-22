@@ -1192,9 +1192,11 @@
   function bindShell() {
     document.getElementById('search-form').addEventListener('submit', function (e) {
       e.preventDefault();
-      var q = document.getElementById('search-input').value.trim();
+      var input = document.getElementById('search-input');
+      var q = input.value.trim();
       if (!q) return;
       navigate('/search/?q=' + encodeURIComponent(q));
+      input.value = '';
     });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-lang]'), function (btn) {

@@ -17,7 +17,7 @@ Alternatively email [yueyuhoshizora@gmail.com](mailto:yueyuhoshizora@gmail.com) 
 
 - affected URL or file
 - what you expected vs what happened
-- steps to reproduce (a minimal hash URL is enough; no exploit chain required)
+- steps to reproduce (a minimal URL is enough; no exploit chain required)
 - your browser and a short impact assessment
 
 You should get an acknowledgement within **7 days**. If we confirm the report, we will discuss a fix on `main` and credit you if you want it. Please give us time to ship the fix before public disclosure.
@@ -41,7 +41,7 @@ In scope — anything that lets an attacker run script in a visitor’s browser,
 Out of scope:
 
 - whether a YouTube video is “really” that artist’s work
-- YouTube, GitHub Pages, or `raw.githubusercontent.com` themselves
+- YouTube, GitHub Pages, or the upstream data host `data.a-music.app` themselves
 - clickjacking (see below)
 - availability of upstream JSON or oEmbed endpoints
 - self-XSS that requires the visitor to paste into DevTools
@@ -52,8 +52,8 @@ A static site: no backend, no accounts, no cookies, no API keys. All UI strings 
 
 Untrusted inputs we already assume an attacker can control:
 
-1. TrackRadar JSON (`channels.json`, `latest-videos.json`, `genres.json`, `data/<channelId>.json`)
-2. the URL hash (`#/search?q=`, `#/artist/<id>`, `#/genre/<slug>`)
+1. TrackRadar JSON served from `data.a-music.app` (`channels.json`, `latest-videos.json`, `genres.json`, `data/<channelId>.json`)
+2. the URL path and query string (`/search/?q=`, `/artist/<id>/`, `/genre/<slug>/`, `?lang=`)
 3. YouTube oEmbed / noembed `title` fields
 
 A report that “the title text is attacker-controlled” is expected; it is a vulnerability only if that text executes as HTML/JS or becomes a URL/iframe source.
@@ -88,7 +88,7 @@ Engineering notes for people changing this code live in [`CLAUDE.md`](./CLAUDE.m
 
 - 受影響的網址或檔案
 - 預期行為與實際行為
-- 重現步驟（一個最小的 hash 網址即可，不需要完整 exploit）
+- 重現步驟（一個最小的網址即可，不需要完整 exploit）
 - 瀏覽器與簡短影響評估
 
 我們會在 **7 天內**回覆是否收到。確認後會在 `main` 修復；若你願意，修復時會署名致謝。請等到修復上線再公開細節。
@@ -103,9 +103,9 @@ Engineering notes for people changing this code live in [`CLAUDE.md`](./CLAUDE.m
 
 **算弱點**：能在訪客瀏覽器執行腳本、把人導向非預期位址、或污染本站 origin 的 `localStorage`。例如 XSS（含經 TrackRadar JSON 或 oEmbed 標題）、開放重導／`javascript:` URL、CSP 繞過、插入第三方 script 或非預期 iframe 來源、repo 裡出現憑證（不應存在）。
 
-**不算**：影片是不是該音樂人本人作品；YouTube／GitHub Pages／raw.githubusercontent.com 本身；點擊劫持（見下表）；上游 JSON 或 oEmbed 的可用性；需要使用者自己在 DevTools 貼上的 self-XSS。
+**不算**：影片是不是該音樂人本人作品；YouTube／GitHub Pages／上游資料主機 `data.a-music.app` 本身；點擊劫持（見下表）；上游 JSON 或 oEmbed 的可用性；需要使用者自己在 DevTools 貼上的 self-XSS。
 
-本站是純靜態站：無後端、無帳號、無 cookie、無 API key。不可信輸入一律當純文字；寫進 URL 的識別碼先經 `js/api.js` 白名單；播放器只從 `youtube-nocookie` 載入。
+本站是純靜態站：無後端、無帳號、無 cookie、無 API key。不可信輸入包括 `data.a-music.app` 上的 TrackRadar JSON、網址路徑與查詢字串（`/search/?q=`、`/artist/<id>/`、`/genre/<slug>/`、`?lang=`），以及 YouTube oEmbed／noembed 標題，一律當純文字；寫進 URL 的識別碼先經 `js/api.js` 白名單；播放器只從 `youtube-nocookie` 載入。
 
 「標題文字可被攻擊者控制」本身不是弱點——只有當它被當成 HTML／JS 執行，或變成 URL／iframe 來源時才是。
 

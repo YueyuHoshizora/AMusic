@@ -1120,7 +1120,11 @@
     location.search.replace(/^\?/, '').split('&').forEach(function (pair) {
       if (!pair) return;
       var kv = pair.split('=');
-      query[decodeURIComponent(kv[0])] = decodeURIComponent((kv[1] || '').replace(/\+/g, ' '));
+      try {
+        query[decodeURIComponent(kv[0])] = decodeURIComponent((kv[1] || '').replace(/\+/g, ' '));
+      } catch (e) {
+        // A malformed percent escape must not prevent the whole route from rendering.
+      }
     });
     return { path: path, query: query, raw: path + location.search };
   }

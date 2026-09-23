@@ -28,7 +28,7 @@ import sys
 import urllib.request
 
 ORIGIN = 'https://a-music.app'
-UPSTREAM = 'https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/'
+UPSTREAM = 'https://data.a-music.app/'
 LOCALES = [('zh-Hant', ''), ('en', '?lang=en'), ('ja', '?lang=ja'), ('x-default', '')]
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -86,7 +86,8 @@ def prune(expected):
 
 
 def fetch_json(name):
-    with urllib.request.urlopen(UPSTREAM + name, timeout=30) as resp:
+    request = urllib.request.Request(UPSTREAM + name, headers={'User-Agent': 'A-Music build-pages (+https://a-music.app/)'})
+    with urllib.request.urlopen(request, timeout=30) as resp:
         return json.load(resp)
 
 

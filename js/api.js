@@ -7,7 +7,7 @@
 (function (global) {
   'use strict';
 
-  var BASE = 'https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/';
+  var BASE = 'https://data.a-music.app/';
   var CACHE_KEY = 'amusic:vcache:v1';
   var CACHE_TTL = 14 * 24 * 60 * 60 * 1000; // 14 days
   var CACHE_MAX = 4000;

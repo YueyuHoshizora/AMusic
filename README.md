@@ -41,10 +41,10 @@ python3 -m http.server 4173
 
 > https://github.com/YueyuHoshizora/TrackRadar
 
-讀取位址為該 repo 的 raw 檔案（`js/api.js` 的 `BASE`）：
+網站透過 A-Music 資料端點讀取 TrackRadar 產生的 JSON（`js/api.js` 的 `BASE`）：
 
 ```
-https://raw.githubusercontent.com/YueyuHoshizora/TrackRadar/refs/heads/main/
+https://data.a-music.app/
 ```
 
 | 檔案 | 用途 | 使用的欄位 |
